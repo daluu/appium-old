@@ -38,6 +38,7 @@ To launch a webdriver-compatible server, run:<br />
 Contributing
 ------------
 
+Fork the project, make a change, and send a pull request! 
 
 Mailing List
 -----------
