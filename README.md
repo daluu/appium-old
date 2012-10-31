@@ -14,16 +14,32 @@ There are two big benefits to testing with Appium:
 Quick Start
 -----------
 
-To get started, clone the repo: `git clone git://github.com/saucelabs/appium`.
+To get started, clone the repo:<br />
+`git clone git://github.com/hugs/appium`
 
-Next, change into the 'appium' directory, and install dependencies: `pip install -r requirements.txt`.
+Next, change into the 'appium' directory, and install dependencies:<br />
+`pip install -r requirements.txt`
 
+Create a file in your home folder with that will store your username and password. (This is required to beat a security dialog that can appear when launching your ios app).<br />
+`touch ~/appium.py`
+
+The file should read something like:
+
+<pre>[appium]
+username = your_username
+password = your_password</pre>
+
+To launch an interpreter for sending raw UIAutomation javascript commands run:<br />
+`python inpreter.py "path_to_your_ios_.app"`
+
+To launch a webdriver-compatible server, run:<br />
+`python server.py "path_to_your_ios_.app"`
 
 Contributing
 ------------
-Fork the project, make a change, and send a pull request! 
 
 
 Mailing List
 -----------
-https://groups.google.com/d/forum/appium-discuss
+
+<a href="https://groups.google.com/d/forum/appium-discuss">Discussion Group</a>
