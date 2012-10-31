@@ -21,6 +21,9 @@ Next, change into the 'appium' directory, and install dependencies: `pip install
 
 Contributing
 ------------
+Fork the project, make a change, and send a pull request! 
+
 
 Mailing List
 -----------
+https://groups.google.com/d/forum/appium-discuss
