@@ -30,10 +30,21 @@ username = your_username
 password = your_password</pre>
 
 To launch an interpreter for sending raw UIAutomation javascript commands run:<br />
-`python inpreter.py "path_to_your_ios_.app"`
+`python appium.py "path_to_your_ios_.app"` <br />
 
 To launch a webdriver-compatible server, run:<br />
 `python server.py "path_to_your_ios_.app"`
+
+Tests can be written using raw javascript or webdriver.
+
+An example of the raw javascript approach lives in `sample-code/js-test.py`
+To run the test you must build the sample app (`sample-code/apps/Test App 2/TestApp.xcodeproj`) in Xcode.
+You can find the compiled app using spotlight from the command line. `mdfind -name TestApp.app`
+Use that path to run the sample test `python js-test.py "/path/to/sample.app"`
+
+An example of the webdriver approach lives in `sample-code/webdriver-test.py`
+Compile and find the app as you did in the previous example and then launch the webdriver server. `python server.py "/path/to/sample.app"`
+Now you can run a test against that server. `python webdriver-test.py "/path/to/sample.app"`
 
 Contributing
 ------------
