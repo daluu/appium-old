@@ -21,7 +21,7 @@ Next, change into the 'appium' directory, and install dependencies:<br />
 `pip install -r requirements.txt`
 
 Create a file in your home folder with that will store your username and password. (This is required to beat a security dialog that can appear when launching your ios app).<br />
-`touch ~/appium.py`
+`touch ~/.appium`
 
 The file should read something like:
 
