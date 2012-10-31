@@ -13,10 +13,10 @@ def get_favicon():
 
 @app.route('/wd/hub/status', method='GET')
 def status():
-    status = {'sessionId': None, 
-              'status': 0, 
+    status = {'sessionId': None,
+              'status': 0,
               'value': {'build': {'version': 'Appium 1.0'}}}
-    return status 
+    return status
 
 @app.route('/wd/hub/session', method='POST')
 def create_session():
@@ -24,8 +24,8 @@ def create_session():
 
 @app.route('/wd/hub/session/<session_id>', method='GET')
 def get_session(session_id=''):
-    response = {'sessionId': '1', 
-                'status': 0, 
+    app_response = {'sessionId': '1',
+                'status': 0,
                 'value': {"version":"5.0",
                           "webStorageEnabled":False,
                           "locationContextEnabled":False,
@@ -34,15 +34,15 @@ def get_session(session_id=''):
                           "javascriptEnabled":True,
                           "databaseEnabled":False,
                           "takesScreenshot":False}}
-    return response
+    return app_response
 
 @app.route('/wd/hub/session/<session_id>', method='DELETE')
 def delete_session(session_id=''):
-    app.ios_client.stop() 
-    response = {'sessionId': '1', 
-                'status': 0, 
+    app.ios_client.stop()
+    app_response = {'sessionId': '1',
+                'status': 0,
                 'value': {}}
-    return response 
+    return app_response
 
 @app.route('/wd/hub/session/<session_id>/frame', method='POST')
 def switch_to_frame(session_id=''):
@@ -58,10 +58,10 @@ def switch_to_frame(session_id=''):
         response.status = 400
         status = 13  # UnknownError
 
-    app_response = {'sessionId': '1', 
-                'status': status, 
+    app_response = {'sessionId': '1',
+                'status': status,
                 'value': {}}
-    return app_response 
+    return app_response
 
 @app.route('/wd/hub/session/<session_id>/execute', method='POST')
 def execute_script(session_id=''):
@@ -75,11 +75,11 @@ def execute_script(session_id=''):
         response.status = 400
         status = 13  # UnknownError
 
-    response = {'sessionId': '1', 
-		'status': status, 
+    app_response = {'sessionId': '1',
+		'status': status,
 		'value': ios_response}
-    return response
-    
+    return app_response
+
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/text', method='GET')
 def get_text(session_id='', element_id=''):
     status = 0
@@ -91,10 +91,10 @@ def get_text(session_id='', element_id=''):
         response.status = 400
         status = 13  # UnknownError
 
-    response = {'sessionId': '1', 
-		'status': status, 
+    app_response = {'sessionId': '1',
+		'status': status,
 		'value': ios_response}
-    return response
+    return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/attribute/<attribute>', method='GET')
 def get_text(session_id='', element_id='', attribute=''):
@@ -107,10 +107,10 @@ def get_text(session_id='', element_id='', attribute=''):
         response.status = 400
         status = 13  # UnknownError
 
-    response = {'sessionId': '1', 
-		'status': status, 
+    app_response = {'sessionId': '1',
+		'status': status,
 		'value': ios_response}
-    return response
+    return app_response
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/click', method='POST')
 def get_text(session_id='', element_id=''):
     status = 0
@@ -122,10 +122,10 @@ def get_text(session_id='', element_id=''):
         response.status = 400
         status = 13  # UnknownError
 
-    response = {'sessionId': '1', 
-		'status': status, 
+    app_response = {'sessionId': '1',
+		'status': status,
 		'value': ios_response}
-    return response
+    return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/value', method='POST')
 def set_value(session_id='', element_id=''):
@@ -134,20 +134,20 @@ def set_value(session_id='', element_id=''):
     request_data = request.body.read()
     print request_data
     try:
-        value_to_set = json.loads(request_data).get('value') 
+        value_to_set = json.loads(request_data).get('value')
         value_to_set = ''.join(value_to_set)
 
-        script = "elements['%s'].setValue('%s')" % (element_id, value_to_set) 
+        script = "elements['%s'].setValue('%s')" % (element_id, value_to_set)
         print script
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
         status = 13  # UnknownError
 
-    response = {'sessionId': '1', 
-		'status': status, 
+    app_response = {'sessionId': '1',
+		'status': status,
 		'value': ''}
-    return response
+    return app_response
 
 @app.route('/wd/hub/session/<session_id>/elements', method='POST')
 def find_elements(session_id=''):
@@ -156,10 +156,10 @@ def find_elements(session_id=''):
     print request_data
     try:
         locator_strategy = json.loads(request_data).get('using')
-        element_type = json.loads(request_data).get('value') 
+        element_type = json.loads(request_data).get('value')
         elements = {'button': 'buttons()',
                     'textField': 'textFields()',
-                    'secureTextField': 'secureTextFields()'} 
+                    'secureTextField': 'secureTextFields()'}
 
         ios_request = "wd_frame.%s.length" % elements[element_type]
         print ios_request
@@ -180,23 +180,24 @@ def find_elements(session_id=''):
     except:
         response.status = 400
         status = 13  # UnknownError
-    response = {'sessionId': '1', 
-                'status': status, 
+
+    app_response = {'sessionId': '1',
+                'status': status,
                 'value': found_elements}
-    return response 
+    return app_response
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv) == 2:
         path_to_app = sys.argv[1]
         app.ios_client = Appium(path_to_app)
-        app.ios_client.start() 
+        app.ios_client.start()
         run(app, host='0.0.0.0', port=4723)
     else:
       print """
-  Appium - iOS App Automation 
-       
-  Usage: 
+  Appium - iOS App Automation
+
+  Usage:
     When run as a script, include the absolute path to an app:
     $ python server.py ~/somethingawesome.app
   """
