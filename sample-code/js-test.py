@@ -24,7 +24,7 @@ driver.proxy('target.frontMostApp().mainWindow().textFields()[1].setValue("' + s
 
 # submit the form
 print 'Submitting the form'
-driver.proxy('target.frontMostApp().mainWindow().buttons()["Compute Sum"].tap();')
+driver.proxy('target.frontMostApp().mainWindow().buttons()[0].tap();')
 
 # validate the sum
 answer = driver.proxy('target.frontMostApp().mainWindow().staticTexts()[0].value()')[0][1]
