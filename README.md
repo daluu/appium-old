@@ -30,10 +30,16 @@ username = your_username
 password = your_password</pre>
 
 To launch an interpreter for sending raw UIAutomation javascript commands run:<br />
+For the Simulator:<br />
 `python appium.py "path_to_your_ios_.app"` <br />
+For a Device:<br />
+`python appium.py com.yourApps.BundleID <DEVICE_UDID>` <br />
 
 To launch a webdriver-compatible server, run:<br />
-`python server.py "path_to_your_ios_.app"`
+For the Simulator:<br />
+`python server.py "path_to_your_ios_.app"` <br />
+For a Device:<br />
+`python server.py com.yourApps.BundleID -U <DEVICE_UDID>` <br />
 
 Tests can be written using raw javascript or webdriver.
 
