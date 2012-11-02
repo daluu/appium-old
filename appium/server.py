@@ -111,6 +111,7 @@ def get_text(session_id='', element_id='', attribute=''):
 		'status': status,
 		'value': ios_response}
     return app_response
+
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/click', method='POST')
 def get_text(session_id='', element_id=''):
     status = 0

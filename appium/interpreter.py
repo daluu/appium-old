@@ -23,6 +23,6 @@ def launch(app=None, udid=None):
                 except:
                     print response
         except KeyboardInterrupt:
-            pass 
+            pass
     else:
         raise "ERROR: No app specified"

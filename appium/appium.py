@@ -33,7 +33,7 @@ class Appium:
 
     # Check if Instruments is running
     def is_running(self):
-        return self.instruments_process is not None and self.instruments_process.poll() is  None
+        return self.instruments_process is not None and self.instruments_process.poll() is None
 
     # Check if running on the simulator or on device
     def using_simulator(self):
@@ -91,8 +91,8 @@ class Appium:
 
         # Add the app and app arguments
         command.extend([self.app,
-            			'-e', 'UIASCRIPT', self.bootstrap,
-            			'-e', 'UIARESULTSPATH', self.temp_dir])
+                       '-e', 'UIASCRIPT', self.bootstrap,
+                       '-e', 'UIARESULTSPATH', self.temp_dir])
 
         self.instruments_process = Popen(command, stdout=PIPE, stdin=None, stderr=PIPE)
         return self.instruments_process.poll() is None  # Should be True
@@ -103,7 +103,7 @@ class Appium:
 
         output = check_output(["/usr/bin/osascript", "-e",
             "tell application \"System Events\" to (name of processes) contains \"iPhone Simulator\""])
-        
+
         is_running = False
         if output:
             output = output.strip()
@@ -124,19 +124,19 @@ class Appium:
 
     def wait_for_app(self):
         # When we get a response we know the app is alive.
-        self.proxy('') 
+        self.proxy('')
 
     # Proxy a command to the simulator
     # using a file-based inter-process communication
     # between Python and Instruments.
     def proxy(self, command):
-        self.write_command(command) 
-        response = self.read_response()        
+        self.write_command(command)
+        response = self.read_response()
         return response
 
     # Write the command to a file
     def write_command(self, command):
-        # Increment the command index 
+        # Increment the command index
         self.command_index = self.command_index + 1
         try:
             filename = str(self.command_index) + '-cmd.txt'
