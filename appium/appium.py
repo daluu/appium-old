@@ -187,12 +187,21 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         app = sys.argv[1]
         launch(app)
+    elif len(sys.argv) == 3:
+        app  = sys.argv[1]
+        udid = sys.argv[2]
+        launch(app, udid)
     else:
       print """
-  Appium - iOS App Automation 
-       
-  Usage: 
-    When run as a script, include the absolute path to an app:
+  Appium - iOS App Automation
+
+  Usage:
+    When run as a script:
+
+    Simulator, include the path the .app file:
     $ python appium.py ~/somethingawesome.app
+
+    Device, include the bundle id of the app and the devices UDID:
+    $ python appium.py com.myCompany.Awesomeness 123456789013245678901234567890
   """
 
