@@ -8,10 +8,11 @@ from tempfile import mkdtemp
 from time import time, sleep
 
 class Appium:
-    def __init__(self, app='', ):
-        self.app       = app
-        self.username  = None
-        self.password  = None
+    def __init__(self, app='', udid=None):
+        self.app = app
+        self.device_udid = udid
+        self.username = None
+        self.password = None
         self.instruments_process = None
         self.command_index = -1
 
@@ -26,12 +27,17 @@ class Appium:
         self.modify_bootstrap_script()
         self.kill_security_popup()
         self.launch_instruments()
-        self.wait_for_simulator()
+        if self.using_simulator():
+            self.wait_for_simulator()
         self.wait_for_app()
 
     # Check if Instruments is running
     def is_running(self):
         return self.instruments_process is not None and self.instruments_process.poll() is  None
+
+    # Check if running on the simulator or on device
+    def using_simulator(self):
+        return self.device_udid is None
 
     def get_config(self):
         # Check to see if the username and password have been set already::
@@ -76,11 +82,18 @@ class Appium:
 
     # Launch Instruments app
     def launch_instruments(self):
-        command = ['/usr/bin/instruments', '-t', 
-                   os.path.join(self.temp_dir,'Automation.tracetemplate'), 
-                   self.app,
-                   '-e', 'UIASCRIPT', self.bootstrap,
-                   '-e', 'UIARESULTSPATH', self.temp_dir]
+        command = ['/usr/bin/instruments', '-t',
+                   os.path.join(self.temp_dir,'Automation.tracetemplate')]
+
+        # Specify the UDID if running on device
+        if not self.using_simulator():
+            command.extend(['-w', self.device_udid])
+
+        # Add the app and app arguments
+        command.extend([self.app,
+            			'-e', 'UIASCRIPT', self.bootstrap,
+            			'-e', 'UIARESULTSPATH', self.temp_dir])
+
         self.instruments_process = Popen(command, stdout=PIPE, stdin=None, stderr=PIPE)
         return self.instruments_process.poll() is None  # Should be True
 

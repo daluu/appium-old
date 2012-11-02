@@ -186,18 +186,15 @@ def find_elements(session_id=''):
     return response 
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) == 2:
-        path_to_app = sys.argv[1]
-        app.ios_client = Appium(path_to_app)
-        app.ios_client.start() 
-        run(app, host='0.0.0.0', port=4723)
-    else:
-      print """
-  Appium - iOS App Automation 
-       
-  Usage: 
-    When run as a script, include the absolute path to an app:
-    $ python server.py ~/somethingawesome.app
-  """
+    import argparse
+
+    parser = argparse.ArgumentParser(description='A test automation tool for use with native and hybrid iOS applications.')
+    parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
+    parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
+    parser.add_argument('-p', '--port', type=int, default=4723, help='port to listen on')
+
+    args = parser.parse_args()
+    app.ios_client = Appium(args.app, args.UDID)
+    app.ios_client.start()
+    run(app, host='0.0.0.0', port=args.port)
 
