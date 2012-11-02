@@ -183,25 +183,11 @@ class Appium:
 
 if __name__ == '__main__':
     from interpreter import launch
-    import sys
-    if len(sys.argv) == 2:
-        app = sys.argv[1]
-        launch(app)
-    elif len(sys.argv) == 3:
-        app  = sys.argv[1]
-        udid = sys.argv[2]
-        launch(app, udid)
-    else:
-      print """
-  Appium - iOS App Automation
+    import argparse
 
-  Usage:
-    When run as a script:
+    parser = argparse.ArgumentParser(description='An interpreter for sending raw UIAutomation javascript commands to the simulator or a device')
+    parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
+    parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
 
-    Simulator, include the path the .app file:
-    $ python appium.py ~/somethingawesome.app
-
-    Device, include the bundle id of the app and the devices UDID:
-    $ python appium.py com.myCompany.Awesomeness 123456789013245678901234567890
-  """
-
+    args = parser.parse_args()
+    launch(args.app, args.UDID)

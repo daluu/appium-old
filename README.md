@@ -33,7 +33,7 @@ To launch an interpreter for sending raw UIAutomation javascript commands run:<b
 For the Simulator:<br />
 `python appium.py "path_to_your_ios_.app"` <br />
 For a Device:<br />
-`python appium.py com.yourApps.BundleID <DEVICE_UDID>` <br />
+`python appium.py com.yourApps.BundleID -U <DEVICE_UDID>` <br />
 
 To launch a webdriver-compatible server, run:<br />
 For the Simulator:<br />

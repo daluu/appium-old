@@ -155,7 +155,10 @@ def find_elements(session_id=''):
     status = 0
     request_data = request.body.read()
     print request_data
+
+    found_elements = []
     try:
+        # TODO: need to support more locator_strategy's
         locator_strategy = json.loads(request_data).get('using')
         element_type = json.loads(request_data).get('value')
         elements = {'button': 'buttons()',
@@ -166,7 +169,6 @@ def find_elements(session_id=''):
         print ios_request
 
         number_of_items = int(app.ios_client.proxy(ios_request)[0][1])
-        found_elements = []
         print number_of_items
         for i in range(number_of_items):
             var_name = 'wde' + str(int(time() * 1000000))
@@ -190,7 +192,7 @@ def find_elements(session_id=''):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='A test automation tool for use with native and hybrid iOS applications.')
+    parser = argparse.ArgumentParser(description='A webdriver-compatible server for use with native and hybrid iOS applications.')
     parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
     parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
     parser.add_argument('-p', '--port', type=int, default=4723, help='port to listen on')
