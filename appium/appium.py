@@ -8,10 +8,11 @@ from tempfile import mkdtemp
 from time import time, sleep
 
 class Appium:
-    def __init__(self, app='', ):
-        self.app       = app
-        self.username  = None
-        self.password  = None
+    def __init__(self, app='', udid=None):
+        self.app = app
+        self.device_udid = udid
+        self.username = None
+        self.password = None
         self.instruments_process = None
         self.command_index = -1
 
@@ -26,12 +27,17 @@ class Appium:
         self.modify_bootstrap_script()
         self.kill_security_popup()
         self.launch_instruments()
-        self.wait_for_simulator()
+        if self.using_simulator():
+            self.wait_for_simulator()
         self.wait_for_app()
 
     # Check if Instruments is running
     def is_running(self):
-        return self.instruments_process is not None and self.instruments_process.poll() is  None
+        return self.instruments_process is not None and self.instruments_process.poll() is None
+
+    # Check if running on the simulator or on device
+    def using_simulator(self):
+        return self.device_udid is None
 
     def get_config(self):
         # Check to see if the username and password have been set already::
@@ -76,11 +82,18 @@ class Appium:
 
     # Launch Instruments app
     def launch_instruments(self):
-        command = ['/usr/bin/instruments', '-t', 
-                   os.path.join(self.temp_dir,'Automation.tracetemplate'), 
-                   self.app,
-                   '-e', 'UIASCRIPT', self.bootstrap,
-                   '-e', 'UIARESULTSPATH', self.temp_dir]
+        command = ['/usr/bin/instruments', '-t',
+                   os.path.join(self.temp_dir,'Automation.tracetemplate')]
+
+        # Specify the UDID if running on device
+        if not self.using_simulator():
+            command.extend(['-w', self.device_udid])
+
+        # Add the app and app arguments
+        command.extend([self.app,
+                       '-e', 'UIASCRIPT', self.bootstrap,
+                       '-e', 'UIARESULTSPATH', self.temp_dir])
+
         self.instruments_process = Popen(command, stdout=PIPE, stdin=None, stderr=PIPE)
         return self.instruments_process.poll() is None  # Should be True
 
@@ -90,7 +103,7 @@ class Appium:
 
         output = check_output(["/usr/bin/osascript", "-e",
             "tell application \"System Events\" to (name of processes) contains \"iPhone Simulator\""])
-        
+
         is_running = False
         if output:
             output = output.strip()
@@ -111,19 +124,19 @@ class Appium:
 
     def wait_for_app(self):
         # When we get a response we know the app is alive.
-        self.proxy('') 
+        self.proxy('')
 
     # Proxy a command to the simulator
     # using a file-based inter-process communication
     # between Python and Instruments.
     def proxy(self, command):
-        self.write_command(command) 
-        response = self.read_response()        
+        self.write_command(command)
+        response = self.read_response()
         return response
 
     # Write the command to a file
     def write_command(self, command):
-        # Increment the command index 
+        # Increment the command index
         self.command_index = self.command_index + 1
         try:
             filename = str(self.command_index) + '-cmd.txt'
@@ -170,16 +183,11 @@ class Appium:
 
 if __name__ == '__main__':
     from interpreter import launch
-    import sys
-    if len(sys.argv) == 2:
-        app = sys.argv[1]
-        launch(app)
-    else:
-      print """
-  Appium - iOS App Automation 
-       
-  Usage: 
-    When run as a script, include the absolute path to an app:
-    $ python appium.py ~/somethingawesome.app
-  """
+    import argparse
 
+    parser = argparse.ArgumentParser(description='An interpreter for sending raw UIAutomation javascript commands to the simulator or a device')
+    parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
+    parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
+
+    args = parser.parse_args()
+    launch(args.app, args.UDID)

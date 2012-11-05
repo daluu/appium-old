@@ -1,10 +1,10 @@
 from appium import Appium
 import readline
 
-def launch(app=None):
-    if app: 
-        client = Appium(app) 
-        client.start() 
+def launch(app=None, udid=None):
+    if app:
+        client = Appium(app, udid)
+        client.start()
 
         print ""
         print "Enter UIAutomation Command (type 'quit' to quit):"
@@ -23,6 +23,6 @@ def launch(app=None):
                 except:
                     print response
         except KeyboardInterrupt:
-            pass 
+            pass
     else:
         raise "ERROR: No app specified"

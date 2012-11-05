@@ -111,6 +111,7 @@ def get_text(session_id='', element_id='', attribute=''):
 		'status': status,
 		'value': ios_response}
     return app_response
+
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/click', method='POST')
 def get_text(session_id='', element_id=''):
     status = 0
@@ -154,7 +155,10 @@ def find_elements(session_id=''):
     status = 0
     request_data = request.body.read()
     print request_data
+
+    found_elements = []
     try:
+        # TODO: need to support more locator_strategy's
         locator_strategy = json.loads(request_data).get('using')
         element_type = json.loads(request_data).get('value')
         elements = {'button': 'buttons()',
@@ -165,7 +169,6 @@ def find_elements(session_id=''):
         print ios_request
 
         number_of_items = int(app.ios_client.proxy(ios_request)[0][1])
-        found_elements = []
         print number_of_items
         for i in range(number_of_items):
             var_name = 'wde' + str(int(time() * 1000000))
@@ -187,18 +190,15 @@ def find_elements(session_id=''):
     return app_response
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) == 2:
-        path_to_app = sys.argv[1]
-        app.ios_client = Appium(path_to_app)
-        app.ios_client.start()
-        run(app, host='0.0.0.0', port=4723)
-    else:
-      print """
-  Appium - iOS App Automation
+    import argparse
 
-  Usage:
-    When run as a script, include the absolute path to an app:
-    $ python server.py ~/somethingawesome.app
-  """
+    parser = argparse.ArgumentParser(description='A webdriver-compatible server for use with native and hybrid iOS applications.')
+    parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
+    parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
+    parser.add_argument('-p', '--port', type=int, default=4723, help='port to listen on')
+
+    args = parser.parse_args()
+    app.ios_client = Appium(args.app, args.UDID)
+    app.ios_client.start()
+    run(app, host='0.0.0.0', port=args.port)
 
