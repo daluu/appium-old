@@ -140,8 +140,6 @@ class Appium:
     def stop(self):
         if not self.is_running():
             return
-        # Kill the security popup killer
-        self.security_process.terminate()
 
         # Tell Instruments to shut down (nicely)
         self.proxy('runLoop=false;')
