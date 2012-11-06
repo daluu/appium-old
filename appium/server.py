@@ -113,7 +113,7 @@ def get_text(session_id='', element_id='', attribute=''):
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/click', method='POST')
-def get_text(session_id='', element_id=''):
+def do_click(session_id='', element_id=''):
     status = 0
     ios_response = ''
     try:
@@ -153,16 +153,15 @@ def set_value(session_id='', element_id=''):
 @app.route('/wd/hub/session/<session_id>/elements', method='POST')
 def find_elements(session_id=''):
     status = 0
-    request_data = request.body.read()
-    print request_data
+    found_elements = []
     try:
+        request_data = request.body.read()
         locator_strategy = json.loads(request_data).get('using')
         element_type = json.loads(request_data).get('value')
 
         ios_request = "wd_frame.findElements('%s').length" % element_type
         number_of_items = int(app.ios_client.proxy(ios_request)[0][1])
 
-        found_elements = []
         for i in range(number_of_items):
             var_name = 'wde' + str(int(time() * 1000000))
             ios_request = "elements['%s'] = wd_frame.findElements('%s')[%s]" % (var_name, element_type, i)
@@ -175,6 +174,55 @@ def find_elements(session_id=''):
     app_response = {'sessionId': '1',
                 'status': status,
                 'value': found_elements}
+    return app_response
+
+@app.route('/wd/hub/session/<session_id>/element', method='POST')
+def find_element(session_id=''):
+    status = 7
+    found_element = {}
+    try:
+        request_data = request.body.read()
+        print request_data
+        locator_strategy = json.loads(request_data).get('using')
+        value = json.loads(request_data).get('value')
+        # value is "tag_name/text" (i.e. "button/login")
+        sep = value.index('/')
+        tag_name = value[0:sep]
+        text = value[sep + 1:]
+        var_name = 'wde' + str(int(time() * 1000000))
+
+        ios_request = "wd_frame.findElementAndSetKey('%s', '%s', '%s')" % (tag_name, text, var_name)
+        print ios_request
+        ios_response = app.ios_client.proxy(ios_request)
+        print ios_response
+        element = ios_response[0][1];
+        print element
+        if (element != ''):
+            status = 0
+            found_element = {'ELEMENT':var_name}
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    app_response = {'sessionId': '1',
+                'status': status,
+                'value': found_element}
+    return app_response
+
+@app.route('/wd/hub/session/<session_id>/source', method='GET')
+def print_tree(session_id=''):
+    status = 0
+    ios_response = 'logged to stdout'
+    try:
+        script = "wd_frame.logElementTree()"
+        app.ios_client.proxy(script)
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    app_response = {'sessionId': '1',
+        'status': status,
+        'value': ios_response}
     return app_response
 
 if __name__ == '__main__':

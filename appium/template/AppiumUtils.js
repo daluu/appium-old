@@ -34,6 +34,12 @@ UIAElement.prototype.matchesTagName = function(tagName) {
     throw new Error("add support for: " + tagName);
 }
 
+UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
+    if (!this.matchesTagName(tagName))
+	return false;
+    return text === this.label() || text == this.name() || text === this.value();
+}
+
 UIAElement.prototype.findElements = function(tagName) {
     var elements = new Array();
     var findElements = function(element, tagName) {
@@ -49,4 +55,33 @@ UIAElement.prototype.findElements = function(tagName) {
     }
     findElements(this, tagName)
     return elements;
+}
+
+UIAElement.prototype.findElement = function(tagName, text) {
+    var foundElement;
+    var findElement = function(element, tagName, text) {
+	var children = element.elements();
+	var numChildren = children.length;
+	for ( var i = 0; i < numChildren; i++) {
+	    var child = children[i];
+	    if (child.matchesTagNameAndText(tagName, text)) {
+		foundElement = child;
+		return;
+	    }
+	    if (child.hasChildren()) { // big optimization
+		findElement(child, tagName, text);
+		if (foundElement)
+		    return;
+	    }
+	}
+    }
+    findElement(this, tagName, text)
+    return foundElement;
+}
+
+UIAElement.prototype.findElementAndSetKey = function(tagName, text, key) {
+    var foundElement = this.findElement(tagName, text);
+    if (foundElement)
+	elements[key] = foundElement;
+    return foundElement;
 }
