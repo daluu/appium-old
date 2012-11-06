@@ -39,8 +39,20 @@ UIAElement.prototype.matchesTagName = function(tagName) {
 UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
     if (!this.matchesTagName(tagName))
 	return false;
-    return text === this.label() || text == this.name()
-	    || text === this.value();
+    var label = this.label();
+    if (label)
+	label = label.trim();
+    if (label === text)
+	return true;
+    var name = this.name();
+    if (name)
+	name = name.trim();
+    if (name === text)
+	return true;
+    var value = this.value();
+    if (value)
+	value = value.trim();
+    return value === text;
 }
 
 // Finding elements
