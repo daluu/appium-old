@@ -192,11 +192,8 @@ def find_element(session_id=''):
         var_name = 'wde' + str(int(time() * 1000000))
 
         ios_request = "wd_frame.findElementAndSetKey('%s', '%s', '%s')" % (tag_name, text, var_name)
-        print ios_request
         ios_response = app.ios_client.proxy(ios_request)
-        print ios_response
         element = ios_response[0][1];
-        print element
         if (element != ''):
             status = 0
             found_element = {'ELEMENT':var_name}
@@ -210,19 +207,20 @@ def find_element(session_id=''):
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/source', method='GET')
-def print_tree(session_id=''):
+def get_page_source(session_id=''):
     status = 0
-    ios_response = 'logged to stdout'
+    page_source = 'N/A'
     try:
-        script = "wd_frame.logElementTree()"
-        app.ios_client.proxy(script)
+        script = "wd_frame.getPageSource()"
+        ios_response = app.ios_client.proxy(script)
+        page_source = ios_response[0][1];
     except:
         response.status = 400
         status = 13  # UnknownError
 
     app_response = {'sessionId': '1',
         'status': status,
-        'value': ios_response}
+        'value': page_source}
     return app_response
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+// Misc utils
+
 UIAElementNil.prototype.type = function() {
     return "UIAElementNil";
 }
@@ -37,8 +39,11 @@ UIAElement.prototype.matchesTagName = function(tagName) {
 UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
     if (!this.matchesTagName(tagName))
 	return false;
-    return text === this.label() || text == this.name() || text === this.value();
+    return text === this.label() || text == this.name()
+	    || text === this.value();
 }
+
+// Finding elements
 
 UIAElement.prototype.findElements = function(tagName) {
     var elements = new Array();
@@ -84,4 +89,56 @@ UIAElement.prototype.findElementAndSetKey = function(tagName, text, key) {
     if (foundElement)
 	elements[key] = foundElement;
     return foundElement;
+}
+
+// getPageSource
+
+function tabSpacing(depth) {
+    switch (depth) {
+    case 0:
+	return "";
+    case 1:
+	return "  ";
+    case 2:
+	return "    ";
+    case 3:
+	return "      ";
+    case 4:
+	return "        ";
+    case 5:
+	return "          ";
+    }
+    var space = "";
+    for ( var i = 0; i < depth; i++)
+	space += "  ";
+    return space;
+}
+
+UIAElement.prototype.getPageSource = function() {
+    var source = "";
+    var appendPageSource = function(element, depth) {
+	var children = element.elements();
+	var numChildren = children.length;
+	for ( var i = 0; i < numChildren; i++) {
+	    var child = children[i];
+	    appendElementSource(child, depth);
+	    if (child.hasChildren()) // big optimization
+		appendPageSource(child, depth + 1);
+	}
+    }
+    var appendElementSource = function(element, depth) {
+	source += tabSpacing(depth) + element.type() + ':'
+	var label = element.label();
+	var name = element.name();
+	var value = element.value();
+	if (label)
+	    source += ' "' + label + '"';
+	if (name)
+	    source += ' NAME:"' + name + '"';
+	if (value)
+	    source += ' VALUE:"' + value + '"';
+	source += '\n'
+    }
+    appendPageSource(this, 0)
+    return source;
 }
