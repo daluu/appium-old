@@ -20,14 +20,9 @@ To get started, clone the repo:<br />
 Next, change into the 'appium' directory, and install dependencies:<br />
 `pip install -r requirements.txt`
 
-Create a file in your home folder with that will store your username and password. (This is required to beat a security dialog that can appear when launching your ios app).<br />
-`touch ~/.appium`
-
-The file should read something like:
-
-<pre>[appium]
-username = your_username
-password = your_password</pre>
+To avoid a security dialog that can appear when launching your iOS app edit your /etc/authorization file:<br />
+`sudo vi /etc/authorization`<br />
+Find and replace &lt;false/&gt; with &lt;true/&gt; just after this line: &lt;key&gt;system.privilege.taskport&lt;/key&gt;
 
 To launch an interpreter for sending raw UIAutomation javascript commands run:<br />
 For the Simulator:<br />
