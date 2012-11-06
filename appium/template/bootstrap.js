@@ -1,3 +1,5 @@
+#import "AppiumUtils.js"
+
 /* ***** helper functions ***** */
 
 // delay in seconds
