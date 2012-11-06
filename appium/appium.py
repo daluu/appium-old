@@ -11,8 +11,6 @@ class Appium:
     def __init__(self, app='', udid=None):
         self.app = app
         self.device_udid = udid
-        self.username = None
-        self.password = None
         self.instruments_process = None
         self.command_index = -1
 
@@ -21,11 +19,9 @@ class Appium:
         if self.is_running():
             return True
         self.command_index = -1
-        self.get_config()
         self.create_temp_dir()
         self.copy_files()
         self.modify_bootstrap_script()
-        self.kill_security_popup()
         self.launch_instruments()
         if self.using_simulator():
             self.wait_for_simulator()
@@ -38,20 +34,6 @@ class Appium:
     # Check if running on the simulator or on device
     def using_simulator(self):
         return self.device_udid is None
-
-    def get_config(self):
-        # Check to see if the username and password have been set already::
-        if self.username and self.password:
-            return
-        else:
-            # Try to get username and password from file:
-            config = ConfigParser.ConfigParser()
-            result = config.read(os.path.expanduser('~/.appium'))
-            if result:
-                self.username = config.get('appium','username')
-                self.password = config.get('appium','password')
-            else:
-                raise Exception("ERROR: You need to specify OS X name and password in ~/.appium")
 
     # Create temp dir
     def create_temp_dir(self):
@@ -73,12 +55,6 @@ class Appium:
         new_contents = contents.replace("$PATH_ROOT", self.temp_dir + '/')
         with open(self.bootstrap,'w') as file:
             file.write(new_contents)
-
-    # Kill security popup
-    def kill_security_popup(self):
-        applescript = os.path.join(self.temp_dir,'BeatSecurityAgent.applescript')
-        self.security_process = Popen(['/usr/bin/osascript', applescript, self.username, self.password])
-        return self.security_process.poll() is None  # Should be True
 
     # Launch Instruments app
     def launch_instruments(self):
@@ -164,8 +140,6 @@ class Appium:
     def stop(self):
         if not self.is_running():
             return
-        # Kill the security popup killer
-        self.security_process.terminate()
 
         # Tell Instruments to shut down (nicely)
         self.proxy('runLoop=false;')
