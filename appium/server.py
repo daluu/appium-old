@@ -85,6 +85,7 @@ def get_text(session_id='', element_id=''):
     status = 0
     ios_response = ''
     try:
+        # TODO: may need to be non-null of either label()/value()/name()?
         script = "elements['%s'].label()" % element_id
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
@@ -155,6 +156,7 @@ def find_elements(session_id=''):
     status = 0
     found_elements = []
     try:
+        # TODO: need to support more locator_strategy's
         request_data = request.body.read()
         locator_strategy = json.loads(request_data).get('using')
         element_type = json.loads(request_data).get('value')
