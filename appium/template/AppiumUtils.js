@@ -39,11 +39,6 @@ UIAElement.prototype.matchesTagName = function(tagName) {
 UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
     if (!this.matchesTagName(tagName))
 	return false;
-    var label = this.label();
-    if (label)
-	label = label.trim();
-    if (label === text)
-	return true;
     var name = this.name();
     if (name)
 	name = name.trim();
@@ -187,4 +182,13 @@ function setScreenOrientation(orientation) {
     else
 	throw new Error("unsupported orientation: " + orientation);
     return getScreenOrientation();
+}
+
+// getText
+
+UIAElement.prototype.getText = function() {
+    var text = this.name();
+    if (!text)
+	text = this.value();
+    return text;
 }
