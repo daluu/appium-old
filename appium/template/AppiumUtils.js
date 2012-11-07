@@ -15,7 +15,7 @@ UIAElement.prototype.hasChildren = function() {
     return !(type === "UIAImage" || type === "UIAStaticText"
 	    || type === "UIATextField" || type === "UIASecureTextField"
 	    || type === "UIAButton" || type === "UIASwitch"
-	    || type === "UIAElementNil" || type == "UIAElement");
+	    || type === "UIAElementNil");
 }
 
 UIAElement.prototype.matchesTagName = function(tagName) {
