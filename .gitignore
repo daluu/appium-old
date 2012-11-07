@@ -1,3 +1,5 @@
 .DS_Store
 *.trace
 *.pyc
+.project
+.pydevproject
