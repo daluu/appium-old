@@ -14,8 +14,7 @@ UIAElement.prototype.hasChildren = function() {
     // NOTE: UIALink can have UIAStaticText child
     return !(type === "UIAImage" || type === "UIAStaticText"
 	    || type === "UIATextField" || type === "UIASecureTextField"
-	    || type === "UIAButton" || type === "UIASwitch"
-	    || type === "UIAElementNil");
+	    || type === "UIAButton" || type === "UIASwitch" || type === "UIAElementNil");
 }
 
 UIAElement.prototype.matchesTagName = function(tagName) {
@@ -144,9 +143,19 @@ UIAElement.prototype.getPageSource = function() {
 	    source += ' NAME:"' + name + '"';
 	if (value)
 	    source += ' VALUE:"' + value + '"';
+	var r = element.rect();
+	source += ' {{' + Math.round(r.origin.x) + ',' + Math.round(r.origin.y)
+		+ '},{' + Math.round(r.size.width) + ','
+		+ Math.round(r.size.height) + '}}';
 	source += '\n'
     }
-    appendPageSource(this, 0)
+    var target = UIATarget.localTarget();
+    try {
+	target.pushTimeout(0);
+	appendPageSource(this, 0)
+    } finally {
+	target.popTimeout();
+    }
     return source;
 }
 
