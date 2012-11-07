@@ -201,15 +201,12 @@ def find_element(session_id=''):
         response.status = 400
         status = 13  # UnknownError
 
-    app_response = {'sessionId': '1',
-                'status': status,
-                'value': found_element}
-    return app_response
+    return {'sessionId': '1', 'status': status, 'value': found_element}
 
 @app.route('/wd/hub/session/<session_id>/source', method='GET')
 def get_page_source(session_id=''):
     status = 0
-    page_source = 'N/A'
+    page_source = ''
     try:
         script = "wd_frame.getPageSource()"
         ios_response = app.ios_client.proxy(script)
@@ -218,10 +215,39 @@ def get_page_source(session_id=''):
         response.status = 400
         status = 13  # UnknownError
 
-    app_response = {'sessionId': '1',
-        'status': status,
-        'value': page_source}
-    return app_response
+    return {'sessionId': '1', 'status': status, 'value': page_source}
+
+@app.route('/wd/hub/session/<session_id>/orientation', method='GET')
+def get_orientation(session_id=''):
+    status = 0
+    orientation = ''
+    try:
+        ios_response = app.ios_client.proxy("getScreenOrientation()")
+        orientation = ios_response[0][1];
+        if (orientation == "UNKNOWN"):
+            status = 12 # invalid element state
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    return {'sessionId': '1', 'status': status, 'value': orientation}
+
+@app.route('/wd/hub/session/<session_id>/orientation', method='POST')
+def set_orientation(session_id=''):
+    status = 0
+    orientation = ''
+    try:
+        request_data = request.body.read()
+        desired_orientation = json.loads(request_data).get('orientation')
+        ios_response = app.ios_client.proxy("setScreenOrientation('%s')" % desired_orientation)
+        orientation = ios_response[0][1];
+        if (orientation == "UNKNOWN"):
+            status = 12 # invalid element state?
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    return {'sessionId': '1', 'status': status, 'value': orientation}
 
 if __name__ == '__main__':
     import argparse

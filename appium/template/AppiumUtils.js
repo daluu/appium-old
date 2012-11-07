@@ -154,3 +154,37 @@ UIAElement.prototype.getPageSource = function() {
     appendPageSource(this, 0)
     return source;
 }
+
+// screen orientation
+
+function getScreenOrientation() {
+    var orientation = UIATarget.localTarget().deviceOrientation();
+    switch (orientation) {
+    case UIA_DEVICE_ORIENTATION_UNKNOWN:
+	return "UNKNOWN";
+    case UIA_DEVICE_ORIENTATION_PORTRAIT:
+	return "PORTRAIT";
+    case UIA_DEVICE_ORIENTATION_PORTRAIT_UPSIDEDOWN:
+	return "PORTRAIT";
+    case UIA_DEVICE_ORIENTATION_LANDSCAPELEFT:
+	return "LANDSCAPE";
+    case UIA_DEVICE_ORIENTATION_LANDSCAPERIGHT:
+	return "LANDSCAPE";
+    case UIA_DEVICE_ORIENTATION_FACEUP:
+	return "UNKNOWN";
+    case UIA_DEVICE_ORIENTATION_FACEDOWN:
+	return "UNKNOWN";
+    }
+    throw new Error("unsupported orientation: " + orientation);
+}
+
+function setScreenOrientation(orientation) {
+    var target = UIATarget.localTarget();
+    if (orientation === "LANDSCAPE")
+	target.setDeviceOrientation(UIA_DEVICE_ORIENTATION_LANDSCAPELEFT);
+    else if (orientation === "PORTRAIT")
+	target.setDeviceOrientation(UIA_DEVICE_ORIENTATION_PORTRAIT);
+    else
+	throw new Error("unsupported orientation: " + orientation);
+    return getScreenOrientation();
+}
