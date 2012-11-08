@@ -25,8 +25,13 @@ print 'Submitting the form'
 buttons[0].click()
 
 # validate the sum
-# add validation here
-print '\033[92m' + 'SUM = ' + str(num1+num2) + '\033[0m'
+labels = driver.find_elements_by_tag_name('staticText')
+correctAnswer = num1 + num2
+displayedAnswer = labels[0].text
+if int(displayedAnswer) is correctAnswer:
+	print '\033[92m' + 'SUM = ' + displayedAnswer + '\033[0m'
+else:
+        print '\033[91m' + 'SUM = ' + displayedAnswer + ', it should be ' + str(correctAnswer) + '\033[0m'
 
 # quit the webdriver instance
 print 'Quitting webdriver\n'
