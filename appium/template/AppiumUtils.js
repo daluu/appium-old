@@ -45,7 +45,7 @@ UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
 	return true;
     var value = this.value();
     if (value)
-	value = value.trim();
+	value = String(value).trim();
     return value === text;
 }
 
@@ -196,8 +196,21 @@ function setScreenOrientation(orientation) {
 // getText
 
 UIAElement.prototype.getText = function() {
-    var text = this.name();
-    if (!text)
+    // TODO: tune as more cases are found
+    var text;
+    var type = this.type();
+    if (type === "UIATextField" || type === "UIASecureTextField"
+	    || type === "UIATextView") {
+	// value takes precedence for text fields
 	text = this.value();
+	if (!text)
+	    text = this.name();
+    } else {
+	// name takes preference for others
+	// i.e. <h1>title</h1> becomes: name="title", value="1"
+	text = this.name();
+	if (!text)
+	    text = this.value();
+    }
     return text;
 }
