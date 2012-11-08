@@ -85,7 +85,8 @@ def get_text(session_id='', element_id=''):
     status = 0
     ios_response = ''
     try:
-        script = "elements['%s'].value()" % element_id
+        # TODO: may need to be non-null of either label()/value()/name()?
+        script = "elements['%s'].getText()" % element_id
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
@@ -113,7 +114,7 @@ def get_text(session_id='', element_id='', attribute=''):
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/click', method='POST')
-def get_text(session_id='', element_id=''):
+def do_click(session_id='', element_id=''):
     status = 0
     ios_response = ''
     try:
@@ -153,32 +154,20 @@ def set_value(session_id='', element_id=''):
 @app.route('/wd/hub/session/<session_id>/elements', method='POST')
 def find_elements(session_id=''):
     status = 0
-    request_data = request.body.read()
-    print request_data
-
     found_elements = []
     try:
         # TODO: need to support more locator_strategy's
+        request_data = request.body.read()
         locator_strategy = json.loads(request_data).get('using')
         element_type = json.loads(request_data).get('value')
-        elements = {'button': 'buttons()',
-                    'textField': 'textFields()',
-                    'secureTextField': 'secureTextFields()'}
 
-        ios_request = "wd_frame.%s.length" % elements[element_type]
-        print ios_request
-
+        ios_request = "wd_frame.findElements('%s').length" % element_type
         number_of_items = int(app.ios_client.proxy(ios_request)[0][1])
-        print number_of_items
+
         for i in range(number_of_items):
             var_name = 'wde' + str(int(time() * 1000000))
-            print var_name
-
-            ios_request = "elements['%s'] = wd_frame.%s[%s]" % (var_name, elements[element_type], i)
-            print ios_request
-
+            ios_request = "elements['%s'] = wd_frame.findElements('%s')[%s]" % (var_name, element_type, i)
             ios_response = app.ios_client.proxy(ios_request)
-            print ios_response
             found_elements.append({'ELEMENT':var_name})
     except:
         response.status = 400
@@ -188,6 +177,79 @@ def find_elements(session_id=''):
                 'status': status,
                 'value': found_elements}
     return app_response
+
+@app.route('/wd/hub/session/<session_id>/element', method='POST')
+def find_element(session_id=''):
+    status = 7
+    found_element = {}
+    try:
+        request_data = request.body.read()
+        print request_data
+        locator_strategy = json.loads(request_data).get('using')
+        value = json.loads(request_data).get('value')
+        # value is "tag_name/text" (i.e. "button/login")
+        sep = value.index('/')
+        tag_name = value[0:sep]
+        text = value[sep + 1:]
+        var_name = 'wde' + str(int(time() * 1000000))
+
+        ios_request = "wd_frame.findElementAndSetKey('%s', '%s', '%s')" % (tag_name, text, var_name)
+        ios_response = app.ios_client.proxy(ios_request)
+        element = ios_response[0][1];
+        if (element != ''):
+            status = 0
+            found_element = {'ELEMENT':var_name}
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    return {'sessionId': '1', 'status': status, 'value': found_element}
+
+@app.route('/wd/hub/session/<session_id>/source', method='GET')
+def get_page_source(session_id=''):
+    status = 0
+    page_source = ''
+    try:
+        script = "wd_frame.getPageSource()"
+        ios_response = app.ios_client.proxy(script)
+        page_source = ios_response[0][1];
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    return {'sessionId': '1', 'status': status, 'value': page_source}
+
+@app.route('/wd/hub/session/<session_id>/orientation', method='GET')
+def get_orientation(session_id=''):
+    status = 0
+    orientation = ''
+    try:
+        ios_response = app.ios_client.proxy("getScreenOrientation()")
+        orientation = ios_response[0][1];
+        if (orientation == "UNKNOWN"):
+            status = 12 # invalid element state
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    return {'sessionId': '1', 'status': status, 'value': orientation}
+
+@app.route('/wd/hub/session/<session_id>/orientation', method='POST')
+def set_orientation(session_id=''):
+    status = 0
+    orientation = ''
+    try:
+        request_data = request.body.read()
+        desired_orientation = json.loads(request_data).get('orientation')
+        ios_response = app.ios_client.proxy("setScreenOrientation('%s')" % desired_orientation)
+        orientation = ios_response[0][1];
+        if (orientation == "UNKNOWN"):
+            status = 12 # invalid element state?
+    except:
+        response.status = 400
+        status = 13  # UnknownError
+
+    return {'sessionId': '1', 'status': status, 'value': orientation}
 
 if __name__ == '__main__':
     import argparse
