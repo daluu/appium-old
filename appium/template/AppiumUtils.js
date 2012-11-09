@@ -68,8 +68,11 @@ UIAElement.prototype.findElements = function(tagName) {
     return elements;
 }
 
+// if multiple elements match it will return the first one that is visible
+// or the last one if none is visible
 UIAElement.prototype.findElement = function(tagName, text) {
     var foundElement;
+    var foundVisible = false;
     var findElement = function(element, tagName, text) {
         var children = element.elements();
         var numChildren = children.length;
@@ -77,11 +80,13 @@ UIAElement.prototype.findElement = function(tagName, text) {
             var child = children[i];
             if (child.matchesTagNameAndText(tagName, text)) {
                 foundElement = child;
-                return;
+                foundVisible = child.isVisible();
+                if (foundVisible)
+                    return;
             }
             if (child.hasChildren()) { // big optimization
                 findElement(child, tagName, text);
-                if (foundElement)
+                if (foundVisible)
                     return;
             }
         }
