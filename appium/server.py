@@ -85,7 +85,6 @@ def get_text(session_id='', element_id=''):
     status = 0
     ios_response = ''
     try:
-        # TODO: may need to be non-null of either label()/value()/name()?
         script = "elements['%s'].getText()" % element_id
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
