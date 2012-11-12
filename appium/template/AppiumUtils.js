@@ -11,10 +11,10 @@ UIAElement.prototype.type = function() {
 
 UIAElement.prototype.hasChildren = function() {
     var type = this.type();
-    // NOTE: UIALink can have UIAStaticText child
-    return !(type === "UIAImage" || type === "UIAStaticText"
-            || type === "UIATextField" || type === "UIASecureTextField"
-            || type === "UIAButton" || type === "UIASwitch" || type === "UIAElementNil");
+    // NOTE: UIALink/UIAImage/UIAElement can have children
+    return !(type === "UIAStaticText" || type === "UIATextField"
+            || type === "UIASecureTextField" || type === "UIAButton"
+            || type === "UIASwitch" || type === "UIAElementNil");
 }
 
 UIAElement.prototype.matchesTagName = function(tagName) {
@@ -222,3 +222,68 @@ UIAElement.prototype.getText = function() {
     }
     return text;
 }
+
+// timeouts
+
+function setImplicitWait(seconds) {
+    UIATarget.localTarget().setTimeout(seconds);
+}
+
+// Keyboard
+
+sendKeysToActiveElement = function(keys) {
+    if (hasSpecialKeys(keys)) {
+        sendKeysToActiveElementSpecial(keys);
+    } else {
+        var keyboard = UIATarget.localTarget().frontMostApp().keyboard();
+        keyboard.typeString(keys);
+    }
+}
+
+hasSpecialKeys = function(keys) {
+    var numChars = keys.length;
+    for ( var i = 0; i < numChars; i++)
+        if (isSpecialKey(keys.charAt(i)))
+            return true;
+    return false;
+}
+
+sendKeysToActiveElementSpecial = function(keys) {
+    var keyboard = UIATarget.localTarget().frontMostApp().keyboard();
+    var numChars = keys.length;
+    for ( var i = 0; i < numChars; i++)
+        typeKey(keyboard, keys.charAt(i));
+}
+
+// handles some of the special keys in org.openqa.selenium.Keys
+
+isSpecialKey = function(k) {
+    if (k === '\uE003') // DELETE
+        return true;
+    else if (k === '\uE006' || k === '\uE007') // RETURN ENTER
+        return true;
+    return false;
+}
+
+typeKey = function(keyboard, k) {
+    if (k === '\uE003') // DELETE
+        keyboard.keys()["Delete"].tap();
+    else if (k === '\uE006' || k === '\uE007') // RETURN ENTER
+        keyboard.buttons()["Go"].tap();
+    else
+        keyboard.typeString(String(k)); // regular key
+}
+
+// location/size
+
+UIAElement.prototype.getElementLocation = function() {
+    var origin = this.rect().origin;
+    return '{"x":' + origin.x + ',"y":' + origin.y + '}';
+}
+
+UIAElement.prototype.getElementSize = function() {
+    var size = this.rect().size;
+    return '{"width":' + size.width + ',"height":' + size.height + '}';
+}
+
+

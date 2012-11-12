@@ -41,6 +41,10 @@ var elements = {}
 var runLoop = true;
 var instructionNumber = 0;
 
+// WebDriver's implicit wait is 0ms:
+// http://code.google.com/p/selenium/wiki/JsonWireProtocol#POST_/session/:sessionId/timeouts/implicit_wait
+target.setTimeout(0);
+
 // main loop
 while (runLoop)
 {
