@@ -11,41 +11,41 @@ UIAElement.prototype.type = function() {
 
 UIAElement.prototype.hasChildren = function() {
     var type = this.type();
-    // NOTE: UIALink can have UIAStaticText child
-    return !(type === "UIAImage" || type === "UIAStaticText"
-	    || type === "UIATextField" || type === "UIASecureTextField"
-	    || type === "UIAButton" || type === "UIASwitch" || type === "UIAElementNil");
+    // NOTE: UIALink/UIAImage/UIAElement can have children
+    return !(type === "UIAStaticText" || type === "UIATextField"
+            || type === "UIASecureTextField" || type === "UIAButton"
+            || type === "UIASwitch" || type === "UIAElementNil");
 }
 
 UIAElement.prototype.matchesTagName = function(tagName) {
     var type = this.type();
     // ELEMENT, LINK, BUTTON, TEXT_FIELD, SECURE_TEXT_FIELD, TEXT
     if (tagName === "element")
-	return true;
+        return true;
     if (tagName === "link")
-	return type === "UIALink";
+        return type === "UIALink";
     if (tagName === "button")
-	return type === "UIAButton";
+        return type === "UIAButton";
     if (tagName === "textField")
-	return type === "UIATextField";
+        return type === "UIATextField";
     if (tagName === "secureTextField")
-	return type === "UIASecureTextField";
+        return type === "UIASecureTextField";
     if (tagName === "staticText")
-	return type === "UIAStaticText";
+        return type === "UIAStaticText";
     throw new Error("add support for: " + tagName);
 }
 
 UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
     if (!this.matchesTagName(tagName))
-	return false;
+        return false;
     var name = this.name();
     if (name)
-	name = name.trim();
+        name = name.trim();
     if (name === text)
-	return true;
+        return true;
     var value = this.value();
     if (value)
-	value = String(value).trim();
+        value = String(value).trim();
     return value === text;
 }
 
@@ -54,37 +54,42 @@ UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
 UIAElement.prototype.findElements = function(tagName) {
     var elements = new Array();
     var findElements = function(element, tagName) {
-	var children = element.elements();
-	var numChildren = children.length;
-	for ( var i = 0; i < numChildren; i++) {
-	    var child = children[i];
-	    if (child.matchesTagName(tagName))
-		elements.push(child);
-	    if (child.hasChildren()) // big optimization
-		findElements(child, tagName);
-	}
+        var children = element.elements();
+        var numChildren = children.length;
+        for ( var i = 0; i < numChildren; i++) {
+            var child = children[i];
+            if (child.matchesTagName(tagName))
+                elements.push(child);
+            if (child.hasChildren()) // big optimization
+                findElements(child, tagName);
+        }
     }
     findElements(this, tagName)
     return elements;
 }
 
+// if multiple elements match it will return the first one that is visible
+// or the last one if none is visible
 UIAElement.prototype.findElement = function(tagName, text) {
     var foundElement;
+    var foundVisible = false;
     var findElement = function(element, tagName, text) {
-	var children = element.elements();
-	var numChildren = children.length;
-	for ( var i = 0; i < numChildren; i++) {
-	    var child = children[i];
-	    if (child.matchesTagNameAndText(tagName, text)) {
-		foundElement = child;
-		return;
-	    }
-	    if (child.hasChildren()) { // big optimization
-		findElement(child, tagName, text);
-		if (foundElement)
-		    return;
-	    }
-	}
+        var children = element.elements();
+        var numChildren = children.length;
+        for ( var i = 0; i < numChildren; i++) {
+            var child = children[i];
+            if (child.matchesTagNameAndText(tagName, text)) {
+                foundElement = child;
+                foundVisible = child.isVisible();
+                if (foundVisible)
+                    return;
+            }
+            if (child.hasChildren()) { // big optimization
+                findElement(child, tagName, text);
+                if (foundVisible)
+                    return;
+            }
+        }
     }
     findElement(this, tagName, text)
     return foundElement;
@@ -93,7 +98,7 @@ UIAElement.prototype.findElement = function(tagName, text) {
 UIAElement.prototype.findElementAndSetKey = function(tagName, text, key) {
     var foundElement = this.findElement(tagName, text);
     if (foundElement)
-	elements[key] = foundElement;
+        elements[key] = foundElement;
     return foundElement;
 }
 
@@ -102,59 +107,62 @@ UIAElement.prototype.findElementAndSetKey = function(tagName, text, key) {
 function tabSpacing(depth) {
     switch (depth) {
     case 0:
-	return "";
+        return "";
     case 1:
-	return "  ";
+        return "  ";
     case 2:
-	return "    ";
+        return "    ";
     case 3:
-	return "      ";
+        return "      ";
     case 4:
-	return "        ";
+        return "        ";
     case 5:
-	return "          ";
+        return "          ";
     }
     var space = "";
     for ( var i = 0; i < depth; i++)
-	space += "  ";
+        space += "  ";
     return space;
 }
 
 UIAElement.prototype.getPageSource = function() {
     var source = "";
     var appendPageSource = function(element, depth) {
-	var children = element.elements();
-	var numChildren = children.length;
-	for ( var i = 0; i < numChildren; i++) {
-	    var child = children[i];
-	    appendElementSource(child, depth);
-	    if (child.hasChildren()) // big optimization
-		appendPageSource(child, depth + 1);
-	}
+        var children = element.elements();
+        var numChildren = children.length;
+        for ( var i = 0; i < numChildren; i++) {
+            var child = children[i];
+            appendElementSource(child, depth);
+            if (child.hasChildren()) // big optimization
+                appendPageSource(child, depth + 1);
+        }
     }
     var appendElementSource = function(element, depth) {
-	source += tabSpacing(depth) + element.type() + ':'
-	var label = element.label();
-	var name = element.name();
-	var value = element.value();
-	if (label)
-	    source += ' "' + label + '"';
-	if (name)
-	    source += ' NAME:"' + name + '"';
-	if (value)
-	    source += ' VALUE:"' + value + '"';
-	var r = element.rect();
-	source += ' {{' + Math.round(r.origin.x) + ',' + Math.round(r.origin.y)
-		+ '},{' + Math.round(r.size.width) + ','
-		+ Math.round(r.size.height) + '}}';
-	source += '\n'
+        source += tabSpacing(depth) + element.type() + ':'
+        var label = element.label();
+        var name = element.name();
+        var value = element.value();
+        if (label)
+            source += ' "' + label + '"';
+        if (name)
+            source += ' NAME:"' + name + '"';
+        if (value)
+            source += ' VALUE:"' + value + '"';
+        var r = element.rect();
+        source += ' {{' + Math.round(r.origin.x) + ',' + Math.round(r.origin.y)
+                + '},{' + Math.round(r.size.width) + ','
+                + Math.round(r.size.height) + '}}';
+        // show element state
+        source += ' [enabled=' + element.isEnabled() + ',valid='
+                + element.isValid() + ',visible=' + element.isVisible() + ']';
+        source += '\n'
     }
     var target = UIATarget.localTarget();
     try {
-	target.pushTimeout(0);
-	appendPageSource(this, 0)
+        target.pushTimeout(0);
+        appendPageSource(this, 0)
     } finally {
-	target.popTimeout();
+        target.popTimeout();
     }
     return source;
 }
@@ -165,19 +173,19 @@ function getScreenOrientation() {
     var orientation = UIATarget.localTarget().deviceOrientation();
     switch (orientation) {
     case UIA_DEVICE_ORIENTATION_UNKNOWN:
-	return "UNKNOWN";
+        return "UNKNOWN";
     case UIA_DEVICE_ORIENTATION_PORTRAIT:
-	return "PORTRAIT";
+        return "PORTRAIT";
     case UIA_DEVICE_ORIENTATION_PORTRAIT_UPSIDEDOWN:
-	return "PORTRAIT";
+        return "PORTRAIT";
     case UIA_DEVICE_ORIENTATION_LANDSCAPELEFT:
-	return "LANDSCAPE";
+        return "LANDSCAPE";
     case UIA_DEVICE_ORIENTATION_LANDSCAPERIGHT:
-	return "LANDSCAPE";
+        return "LANDSCAPE";
     case UIA_DEVICE_ORIENTATION_FACEUP:
-	return "UNKNOWN";
+        return "UNKNOWN";
     case UIA_DEVICE_ORIENTATION_FACEDOWN:
-	return "UNKNOWN";
+        return "UNKNOWN";
     }
     throw new Error("unsupported orientation: " + orientation);
 }
@@ -185,11 +193,11 @@ function getScreenOrientation() {
 function setScreenOrientation(orientation) {
     var target = UIATarget.localTarget();
     if (orientation === "LANDSCAPE")
-	target.setDeviceOrientation(UIA_DEVICE_ORIENTATION_LANDSCAPELEFT);
+        target.setDeviceOrientation(UIA_DEVICE_ORIENTATION_LANDSCAPELEFT);
     else if (orientation === "PORTRAIT")
-	target.setDeviceOrientation(UIA_DEVICE_ORIENTATION_PORTRAIT);
+        target.setDeviceOrientation(UIA_DEVICE_ORIENTATION_PORTRAIT);
     else
-	throw new Error("unsupported orientation: " + orientation);
+        throw new Error("unsupported orientation: " + orientation);
     return getScreenOrientation();
 }
 
@@ -200,17 +208,82 @@ UIAElement.prototype.getText = function() {
     var text;
     var type = this.type();
     if (type === "UIATextField" || type === "UIASecureTextField"
-	    || type === "UIATextView") {
-	// value takes precedence for text fields
-	text = this.value();
-	if (!text)
-	    text = this.name();
+            || type === "UIATextView") {
+        // value takes precedence for text fields
+        text = this.value();
+        if (!text)
+            text = this.name();
     } else {
-	// name takes preference for others
-	// i.e. <h1>title</h1> becomes: name="title", value="1"
-	text = this.name();
-	if (!text)
-	    text = this.value();
+        // name takes preference for others
+        // i.e. <h1>title</h1> becomes: name="title", value="1"
+        text = this.name();
+        if (!text)
+            text = this.value();
     }
     return text;
 }
+
+// timeouts
+
+function setImplicitWait(seconds) {
+    UIATarget.localTarget().setTimeout(seconds);
+}
+
+// Keyboard
+
+sendKeysToActiveElement = function(keys) {
+    if (hasSpecialKeys(keys)) {
+        sendKeysToActiveElementSpecial(keys);
+    } else {
+        var keyboard = UIATarget.localTarget().frontMostApp().keyboard();
+        keyboard.typeString(keys);
+    }
+}
+
+hasSpecialKeys = function(keys) {
+    var numChars = keys.length;
+    for ( var i = 0; i < numChars; i++)
+        if (isSpecialKey(keys.charAt(i)))
+            return true;
+    return false;
+}
+
+sendKeysToActiveElementSpecial = function(keys) {
+    var keyboard = UIATarget.localTarget().frontMostApp().keyboard();
+    var numChars = keys.length;
+    for ( var i = 0; i < numChars; i++)
+        typeKey(keyboard, keys.charAt(i));
+}
+
+// handles some of the special keys in org.openqa.selenium.Keys
+
+isSpecialKey = function(k) {
+    if (k === '\uE003') // DELETE
+        return true;
+    else if (k === '\uE006' || k === '\uE007') // RETURN ENTER
+        return true;
+    return false;
+}
+
+typeKey = function(keyboard, k) {
+    if (k === '\uE003') // DELETE
+        keyboard.keys()["Delete"].tap();
+    else if (k === '\uE006' || k === '\uE007') // RETURN ENTER
+        keyboard.buttons()["Go"].tap();
+    else
+        keyboard.typeString(String(k)); // regular key
+}
+
+// location/size
+
+UIAElement.prototype.getElementLocation = function() {
+    var origin = this.rect().origin;
+    return '{"x":' + origin.x + ',"y":' + origin.y + '}';
+}
+
+UIAElement.prototype.getElementSize = function() {
+    var size = this.rect().size;
+    return '{"width":' + size.width + ',"height":' + size.height + '}';
+}
+
+
