@@ -312,3 +312,29 @@ touchFlickFromSpeed = function(xSpeed, ySpeed) {
     var mainWindow = UIATarget.localTarget().frontMostApp().mainWindow();
     mainWindow.flickInsideWithOptions(options);
 }
+
+// does a swipe in the middle of the screen of size 1/4 of screen
+// using the direction corresponding to xSpeed/ySpeed
+touchSwipeFromSpeed = function(xSpeed, ySpeed) {
+    // get x, y of vector that provides the direction given by xSpeed/ySpeed and
+    // has length .25
+    var mult = Math.sqrt((0.25 * 0.25) / (xSpeed * xSpeed + ySpeed * ySpeed));
+    var x = mult * xSpeed;
+    var y = mult * ySpeed;
+
+    // translate to swipe in the middle of the screen
+    var options = {
+        startOffset : {
+            x : 0.5 - x / 2,
+            y : 0.5 - y / 2
+        },
+        endOffset : {
+            x : 0.5 + x / 2,
+            y : 0.5 + y / 2
+        },
+        duration : 02
+    };
+
+    var mainWindow = UIATarget.localTarget().frontMostApp().mainWindow();
+    mainWindow.dragInsideWithOptions(options);
+}
