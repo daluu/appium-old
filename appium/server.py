@@ -182,11 +182,10 @@ def find_elements(session_id=''):
 def find_element(session_id=''):
     try:
         status = 7
-        request_data = request.body.read()
-        print request_data
-        locator_strategy = json.loads(request_data).get('using')
-        value = json.loads(request_data).get('value')
-        # value is "tag_name/text" (i.e. "button/login")
+        json_request_data = json.loads(request.body.read())
+        locator_strategy = json_request_data.get('using')
+        value = json_request_data.get('value')
+        # value is "tag_name/text[:attribute]" (i.e. "button/login:visible")
         sep = value.index('/')
         tag_name = value[0:sep]
         text = value[sep + 1:]
