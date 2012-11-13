@@ -246,7 +246,7 @@ def set_orientation(session_id=''):
 def implicit_wait(session_id=''):
     try:
         request_data = request.body.read()
-        timeoutSeconds = json.loads(request_data).get('ms') / 1000;
+        timeoutSeconds = json.loads(request_data).get('ms') / 1000
         app.ios_client.proxy("setImplicitWait('%s')" % timeoutSeconds)
         return {'sessionId': '1', 'status': 0}
     except:
@@ -280,6 +280,18 @@ def element_size(session_id='', element_id=''):
         script = "elements['%s'].getElementSize()" % element_id
         size = json.loads(app.ios_client.proxy(script)[0][1])
         return {'sessionId': '1', 'status': 0, 'value': size}
+    except:
+        response.status = 400
+        return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
+
+@app.route('/wd/hub/session/<session_id>/touch/flick', method='POST')
+def touch_flick(session_id=''):
+    try:
+        json_request_data = json.loads(request.body.read())
+        x_speed = json_request_data.get('xSpeed')
+        y_speed = json_request_data.get('ySpeed')
+        app.ios_client.proxy("touchFlickFromSpeed(%s, %s)" % (x_speed, y_speed))
+        return {'sessionId': '1', 'status': 0}
     except:
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
