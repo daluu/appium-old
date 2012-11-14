@@ -54,7 +54,7 @@ UIAElement.prototype.findElements = function(by) {
         tagName = by.substring(0, sep);
         var len = by.length;
         if (len > 10 && by.substring(len - 8) === ":visible") {
-            text = by.substring(sep + 1, len -8);
+            text = by.substring(sep + 1, len - 8);
             visible = true;
         } else {
             text = by.substring(sep + 1);
@@ -63,7 +63,7 @@ UIAElement.prototype.findElements = function(by) {
         tagName = by;
         text = '';
     }
-    
+
     var elements = new Array();
     var findElements = function(element, tagName, text, visible) {
         var children = element.elements();
@@ -80,7 +80,7 @@ UIAElement.prototype.findElements = function(by) {
     return elements;
 }
 
-//@param by "type[/text[:visible]]"
+// @param by "type[/text[:visible]]"
 UIAElement.prototype.findElement = function(by) {
     var tagName;
     var text;
@@ -90,7 +90,7 @@ UIAElement.prototype.findElement = function(by) {
         tagName = by.substring(0, sep);
         var len = by.length;
         if (len > 10 && by.substring(len - 8) === ":visible") {
-            text = by.substring(sep + 1, len -8);
+            text = by.substring(sep + 1, len - 8);
             visible = true;
         } else {
             text = by.substring(sep + 1);
@@ -99,7 +99,7 @@ UIAElement.prototype.findElement = function(by) {
         tagName = by;
         text = '';
     }
-    
+
     var foundElement;
     var findElement = function(element, tagName, text, visible) {
         var children = element.elements();
@@ -326,12 +326,12 @@ touchFlickFromSpeed = function(xSpeed, ySpeed) {
     // translate to flick in the middle of the screen
     var options = {
         startOffset : {
-            x : 0.5 - x / 2,
-            y : 0.5 - y / 2
+            x : 0.5 - .5 * x,
+            y : 0.5 - .5 * y 
         },
         endOffset : {
-            x : 0.5 + x / 2,
-            y : 0.5 + y / 2
+            x : 0.5 + .5 * x,
+            y : 0.5 + .5 * y
         }
     };
 
@@ -339,26 +339,27 @@ touchFlickFromSpeed = function(xSpeed, ySpeed) {
     mainWindow.flickInsideWithOptions(options);
 }
 
-// does a swipe in the middle of the screen of size 1/4 of screen
+// similar to flick but does a longer movement in the direction of the swipe
+// does a swipe in the middle of the screen of size 1/2 of screen
 // using the direction corresponding to xSpeed/ySpeed
 touchSwipeFromSpeed = function(xSpeed, ySpeed) {
     // get x, y of vector that provides the direction given by xSpeed/ySpeed and
-    // has length .25
-    var mult = Math.sqrt((0.25 * 0.25) / (xSpeed * xSpeed + ySpeed * ySpeed));
+    // has length .50
+    var mult = Math.sqrt((0.5 * 0.5) / (xSpeed * xSpeed + ySpeed * ySpeed));
     var x = mult * xSpeed;
     var y = mult * ySpeed;
 
     // translate to swipe in the middle of the screen
     var options = {
         startOffset : {
-            x : 0.5 - x / 2,
-            y : 0.5 - y / 2
+            x : 0.5 - .25 * x,
+            y : 0.5 - .25 * y
         },
         endOffset : {
-            x : 0.5 + x / 2,
-            y : 0.5 + y / 2
+            x : 0.5 + .75 * x,
+            y : 0.5 + .75 * y
         },
-        duration : 02
+        duration : 0.2
     };
 
     var mainWindow = UIATarget.localTarget().frontMostApp().mainWindow();
