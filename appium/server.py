@@ -285,11 +285,11 @@ def touch_flick(session_id=''):
         json_request_data = json.loads(request.body.read())
         x_speed = json_request_data.get('xSpeed')
         y_speed = json_request_data.get('ySpeed')
-        sweep = json_request_data.get('swipe')
-        if (sweep):
-            app.ios_client.proxy("touchFlickFromSpeed(%s, %s)" % (x_speed, y_speed))
-        else:
+        swipe = json_request_data.get('swipe')
+        if (swipe):
             app.ios_client.proxy("touchSwipeFromSpeed(%s, %s)" % (x_speed, y_speed))
+        else:
+            app.ios_client.proxy("touchFlickFromSpeed(%s, %s)" % (x_speed, y_speed))
         return {'sessionId': '1', 'status': 0}
     except:
         response.status = 400
