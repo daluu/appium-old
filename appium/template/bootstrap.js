@@ -50,6 +50,8 @@ while (runLoop)
 {
     var instructionFile = iosAutoPath + instructionNumber.toString() + "-cmd.txt";
     var responseFile = iosAutoPath + instructionNumber.toString() + "-resp.txt";
+    // NOTE: performTasksWithPathArgumentsTimeouts takes a minimum on one second, this is
+    // the reason each selenium commands takes minimum of 2 seconds
     var instruction = host.performTaskWithPathArgumentsTimeout("/bin/cat", [instructionFile], 5);
     if (instruction.exitCode == 0)
     {

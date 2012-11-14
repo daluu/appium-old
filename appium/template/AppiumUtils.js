@@ -64,20 +64,20 @@ UIAElement.prototype.findElements = function(by) {
         text = '';
     }
 
-    var elements = new Array();
+    var foundElements = new Array();
     var findElements = function(element, tagName, text, visible) {
         var children = element.elements();
         var numChildren = children.length;
         for ( var i = 0; i < numChildren; i++) {
             var child = children[i];
             if (child.matchesBy(tagName, text, visible))
-                elements.push(child);
+                foundElements.push(child);
             if (child.hasChildren()) // big optimization
                 findElements(child, tagName, text, visible);
         }
     }
     findElements(this, tagName, text, visible)
-    return elements;
+    return foundElements;
 }
 
 // @param by "type[/text[:visible]]"
@@ -121,11 +121,33 @@ UIAElement.prototype.findElement = function(by) {
     return foundElement;
 }
 
-UIAElement.prototype.findElementAndSetKey = function(by, key) {
+var elements = new Array();
+var globalElementCounter = 0;
+
+// @return [{'ELEMENT': var_name}, ...]
+UIAElement.prototype.findElementsAndSetKeys = function(by) {
+    var json = '[';
+    var foundElements = this.findElements(by);
+    for ( var i = 0; i < foundElements.length; i++) {
+        var varName = 'wde' + globalElementCounter++;
+        elements[varName] = foundElements[i];
+        if (i > 0)
+            json += ',';
+        json += '{"ELEMENT":' + '"' + varName + '"' + '}';
+    }
+    json += ']';
+    return json;
+}
+
+// @return var_namne
+UIAElement.prototype.findElementAndSetKey = function(by) {
     var foundElement = this.findElement(by);
-    if (foundElement)
-        elements[key] = foundElement;
-    return foundElement;
+    if (foundElement) {
+        var varName = 'wde' + globalElementCounter++;
+        elements[varName] = foundElement;
+        return varName;
+    }
+    return '';
 }
 
 // getPageSource

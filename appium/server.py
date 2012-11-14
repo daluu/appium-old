@@ -153,47 +153,34 @@ def set_value(session_id='', element_id=''):
 
 @app.route('/wd/hub/session/<session_id>/elements', method='POST')
 def find_elements(session_id=''):
-    status = 0
-    found_elements = []
     try:
         # TODO: need to support more locator_strategy's
         json_request_data = json.loads(request.body.read())
         locator_strategy = json_request_data.get('using')
         value = json_request_data.get('value')
 
-        ios_request = "wd_frame.findElements('%s').length" % value
-        number_of_items = int(app.ios_client.proxy(ios_request)[0][1])
-
-        for i in range(number_of_items):
-            var_name = 'wde' + str(int(time() * 1000000))
-            ios_request = "elements['%s'] = wd_frame.findElements('%s')[%s]" % (var_name, value, i)
-            ios_response = app.ios_client.proxy(ios_request)
-            found_elements.append({'ELEMENT':var_name})
+        ios_request = "wd_frame.findElementsAndSetKeys('%s')" % value
+        ios_response = app.ios_client.proxy(ios_request)
+        found_elements = json.loads(ios_response[0][1])
+        return {'sessionId': '1', 'status': 0, 'value': found_elements}
     except:
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
 
-    app_response = {'sessionId': '1',
-                'status': status,
-                'value': found_elements}
-    return app_response
-
 @app.route('/wd/hub/session/<session_id>/element', method='POST')
 def find_element(session_id=''):
     try:
-        status = 7
         json_request_data = json.loads(request.body.read())
         locator_strategy = json_request_data.get('using')
         value = json_request_data.get('value')
-        var_name = 'wde' + str(int(time() * 1000000))
 
-        ios_request = "wd_frame.findElementAndSetKey('%s', '%s')" % (value, var_name)
+        ios_request = "wd_frame.findElementAndSetKey('%s')" % value
         ios_response = app.ios_client.proxy(ios_request)
-        element = ios_response[0][1];
-        if (element != ''):
-            status = 0
+        var_name = ios_response[0][1];
+        if (var_name == ''):
+            return {'sessionId': '1', 'status': 7};
         found_element = {'ELEMENT':var_name}
-        return {'sessionId': '1', 'status': status, 'value': found_element}
+        return {'sessionId': '1', 'status': 0, 'value': found_element}
     except:
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
