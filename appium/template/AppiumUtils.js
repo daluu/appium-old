@@ -35,9 +35,14 @@ UIAElement.prototype.matchesTagName = function(tagName) {
     throw new Error("add support for: " + tagName);
 }
 
-UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
+UIAElement.prototype.matchesBy = function(tagName, text, visible) {
     if (!this.matchesTagName(tagName))
         return false;
+    if (typeof visible != "undefined")
+        if (visible != this.isVisible())
+            return false;
+    if (text === '')
+        return true;
     var name = this.name();
     if (name)
         name = name.trim();
@@ -51,59 +56,87 @@ UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
 
 // Finding elements
 
-UIAElement.prototype.findElements = function(tagName) {
+// @param by "type[/text[:visible]]"
+UIAElement.prototype.findElements = function(by) {
+    var tagName;
+    var text;
+    var visible;
+    var sep = by.indexOf('/');
+    if (sep != -1) {
+        tagName = by.substring(0, sep);
+        var len = by.length;
+        if (len > 10 && by.substring(len - 8) === ":visible") {
+            text = by.substring(sep + 1, len -8);
+            visible = true;
+        } else {
+            text = by.substring(sep + 1);
+        }
+    } else {
+        tagName = by;
+        text = '';
+    }
+    
+    UIALogger.logMessage("values: " + tagName + ' ' + text + ' ' + visible);
+    
     var elements = new Array();
-    var findElements = function(element, tagName) {
+    var findElements = function(element, tagName, text, visible) {
         var children = element.elements();
         var numChildren = children.length;
         for ( var i = 0; i < numChildren; i++) {
             var child = children[i];
-            if (child.matchesTagName(tagName))
+            if (child.matchesBy(tagName, text, visible))
                 elements.push(child);
             if (child.hasChildren()) // big optimization
-                findElements(child, tagName);
+                findElements(child, tagName, text, visible);
         }
     }
-    findElements(this, tagName)
+    findElements(this, tagName, text, visible)
     return elements;
 }
 
-// if multiple elements match it will return the first one that is visible
-// or the last one if none is visible
-UIAElement.prototype.findElement = function(tagName, text) {
-    var length = text.length;
-    var findVisibleOnly = false;
-    if (length > 10 && text.substring(length - 8) === ":visible") {
-        text = text.substring(0, length - 8);
-        findVisibleOnly = true;
+//@param by "type[/text[:visible]]"
+UIAElement.prototype.findElement = function(by) {
+    var tagName;
+    var text;
+    var visible;
+    var sep = by.indexOf('/');
+    if (sep != -1) {
+        tagName = by.substring(0, sep);
+        var len = by.length;
+        if (len > 10 && by.substring(len - 8) === ":visible") {
+            text = by.substring(sep + 1, len -8);
+            visible = true;
+        } else {
+            text = by.substring(sep + 1);
+        }
+    } else {
+        tagName = by;
+        text = '';
     }
+    
     var foundElement;
-    var foundVisible = false;
-    var findElement = function(element, tagName, text) {
+    var findElement = function(element, tagName, text, visible) {
         var children = element.elements();
         var numChildren = children.length;
         for ( var i = 0; i < numChildren; i++) {
             var child = children[i];
-            if (child.matchesTagNameAndText(tagName, text)) {
-                foundVisible = child.isVisible();
-                if (foundVisible || !findVisibleOnly)
-                    foundElement = child;
-                if (foundVisible)
-                    return;
+            if (child.matchesBy(tagName, text, visible)) {
+                foundElement = child;
+                return;
             }
             if (child.hasChildren()) { // big optimization
-                findElement(child, tagName, text);
-                if (foundVisible)
+                findElement(child, tagName, text, visible);
+                if (foundElement)
                     return;
             }
         }
     }
-    findElement(this, tagName, text)
+    findElement(this, tagName, text, visible)
     return foundElement;
 }
 
-UIAElement.prototype.findElementAndSetKey = function(tagName, text, key) {
-    var foundElement = this.findElement(tagName, text);
+UIAElement.prototype.findElementAndSetKey = function(by, key) {
+    var foundElement = this.findElement(by);
     if (foundElement)
         elements[key] = foundElement;
     return foundElement;

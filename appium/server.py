@@ -157,16 +157,16 @@ def find_elements(session_id=''):
     found_elements = []
     try:
         # TODO: need to support more locator_strategy's
-        request_data = request.body.read()
-        locator_strategy = json.loads(request_data).get('using')
-        element_type = json.loads(request_data).get('value')
+        json_request_data = json.loads(request.body.read())
+        locator_strategy = json_request_data.get('using')
+        value = json_request_data.get('value')
 
-        ios_request = "wd_frame.findElements('%s').length" % element_type
+        ios_request = "wd_frame.findElements('%s').length" % value
         number_of_items = int(app.ios_client.proxy(ios_request)[0][1])
 
         for i in range(number_of_items):
             var_name = 'wde' + str(int(time() * 1000000))
-            ios_request = "elements['%s'] = wd_frame.findElements('%s')[%s]" % (var_name, element_type, i)
+            ios_request = "elements['%s'] = wd_frame.findElements('%s')[%s]" % (var_name, value, i)
             ios_response = app.ios_client.proxy(ios_request)
             found_elements.append({'ELEMENT':var_name})
     except:
@@ -185,13 +185,9 @@ def find_element(session_id=''):
         json_request_data = json.loads(request.body.read())
         locator_strategy = json_request_data.get('using')
         value = json_request_data.get('value')
-        # value is "tag_name/text[:attribute]" (i.e. "button/login:visible")
-        sep = value.index('/')
-        tag_name = value[0:sep]
-        text = value[sep + 1:]
         var_name = 'wde' + str(int(time() * 1000000))
 
-        ios_request = "wd_frame.findElementAndSetKey('%s', '%s', '%s')" % (tag_name, text, var_name)
+        ios_request = "wd_frame.findElementAndSetKey('%s', '%s')" % (value, var_name)
         ios_response = app.ios_client.proxy(ios_request)
         element = ios_response[0][1];
         if (element != ''):
