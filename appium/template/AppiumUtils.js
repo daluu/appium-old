@@ -19,20 +19,8 @@ UIAElement.prototype.hasChildren = function() {
 
 UIAElement.prototype.matchesTagName = function(tagName) {
     var type = this.type();
-    // ELEMENT, LINK, BUTTON, TEXT_FIELD, SECURE_TEXT_FIELD, TEXT
-    if (tagName === "element")
-        return true;
-    if (tagName === "link")
-        return type === "UIALink";
-    if (tagName === "button")
-        return type === "UIAButton";
-    if (tagName === "textField")
-        return type === "UIATextField";
-    if (tagName === "secureTextField")
-        return type === "UIASecureTextField";
-    if (tagName === "staticText")
-        return type === "UIAStaticText";
-    throw new Error("add support for: " + tagName);
+    // i.e. "UIALink" matches "link:
+    return type.substring(3).toLowerCase() === tagName.toLowerCase();
 }
 
 UIAElement.prototype.matchesBy = function(tagName, text, visible) {
@@ -75,8 +63,6 @@ UIAElement.prototype.findElements = function(by) {
         tagName = by;
         text = '';
     }
-    
-    UIALogger.logMessage("values: " + tagName + ' ' + text + ' ' + visible);
     
     var elements = new Array();
     var findElements = function(element, tagName, text, visible) {
