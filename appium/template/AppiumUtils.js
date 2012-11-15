@@ -26,9 +26,8 @@ UIAElement.prototype.matchesTagName = function(tagName) {
 UIAElement.prototype.matchesBy = function(tagName, text, visible) {
     if (!this.matchesTagName(tagName))
         return false;
-    if (typeof visible != "undefined")
-        if (visible != this.isVisible())
-            return false;
+    if (visible !== this.isVisible())
+        return false;
     if (text === '')
         return true;
     var name = this.name();
@@ -44,18 +43,18 @@ UIAElement.prototype.matchesBy = function(tagName, text, visible) {
 
 // Finding elements
 
-// @param by "type[/text[:visible]]"
+// @param by "type[/text[:invisible]]"
 UIAElement.prototype.findElements = function(by) {
     var tagName;
     var text;
-    var visible;
+    var visible = 1;
     var sep = by.indexOf('/');
     if (sep != -1) {
         tagName = by.substring(0, sep);
         var len = by.length;
-        if (len > 10 && by.substring(len - 8) === ":visible") {
-            text = by.substring(sep + 1, len - 8);
-            visible = true;
+        if (len > 10 && by.substring(len - 10) === ":invisible") {
+            text = by.substring(sep + 1, len - 10);
+            visible = 0;
         } else {
             text = by.substring(sep + 1);
         }
@@ -84,14 +83,14 @@ UIAElement.prototype.findElements = function(by) {
 UIAElement.prototype.findElement = function(by) {
     var tagName;
     var text;
-    var visible;
+    var visible = 1;
     var sep = by.indexOf('/');
     if (sep != -1) {
         tagName = by.substring(0, sep);
         var len = by.length;
-        if (len > 10 && by.substring(len - 8) === ":visible") {
-            text = by.substring(sep + 1, len - 8);
-            visible = true;
+        if (len > 10 && by.substring(len - 10) === ":invisible") {
+            text = by.substring(sep + 1, len - 10);
+            visible = 0;
         } else {
             text = by.substring(sep + 1);
         }
