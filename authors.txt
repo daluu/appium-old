@@ -6,4 +6,4 @@ Jason Huggins <hugs@saucelabs.com>
 Jason Carr <jcarr@saucelabs.com>
 Jayme Deffenbaugh <jdeffenbaugh@me.com>
 Roman Salvador <>
-Luke Inman-Semerau <>
+Luke Inman-Semerau <luke.semerau@gmail.com>
