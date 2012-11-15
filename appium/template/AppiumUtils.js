@@ -19,25 +19,17 @@ UIAElement.prototype.hasChildren = function() {
 
 UIAElement.prototype.matchesTagName = function(tagName) {
     var type = this.type();
-    // ELEMENT, LINK, BUTTON, TEXT_FIELD, SECURE_TEXT_FIELD, TEXT
-    if (tagName === "element")
-        return true;
-    if (tagName === "link")
-        return type === "UIALink";
-    if (tagName === "button")
-        return type === "UIAButton";
-    if (tagName === "textField")
-        return type === "UIATextField";
-    if (tagName === "secureTextField")
-        return type === "UIASecureTextField";
-    if (tagName === "staticText")
-        return type === "UIAStaticText";
-    throw new Error("add support for: " + tagName);
+    // i.e. "UIALink" matches "link:
+    return type.substring(3).toLowerCase() === tagName.toLowerCase();
 }
 
-UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
+UIAElement.prototype.matchesBy = function(tagName, text, visible) {
     if (!this.matchesTagName(tagName))
         return false;
+    if (visible !== this.isVisible())
+        return false;
+    if (text === '')
+        return true;
     var name = this.name();
     if (name)
         name = name.trim();
@@ -51,55 +43,110 @@ UIAElement.prototype.matchesTagNameAndText = function(tagName, text) {
 
 // Finding elements
 
-UIAElement.prototype.findElements = function(tagName) {
-    var elements = new Array();
-    var findElements = function(element, tagName) {
+// @param by "type[/text[:invisible]]"
+UIAElement.prototype.findElements = function(by) {
+    var tagName;
+    var text;
+    var visible = 1;
+    var sep = by.indexOf('/');
+    if (sep != -1) {
+        tagName = by.substring(0, sep);
+        var len = by.length;
+        if (len > 10 && by.substring(len - 10) === ":invisible") {
+            text = by.substring(sep + 1, len - 10);
+            visible = 0;
+        } else {
+            text = by.substring(sep + 1);
+        }
+    } else {
+        tagName = by;
+        text = '';
+    }
+
+    var foundElements = new Array();
+    var findElements = function(element, tagName, text, visible) {
         var children = element.elements();
         var numChildren = children.length;
         for ( var i = 0; i < numChildren; i++) {
             var child = children[i];
-            if (child.matchesTagName(tagName))
-                elements.push(child);
+            if (child.matchesBy(tagName, text, visible))
+                foundElements.push(child);
             if (child.hasChildren()) // big optimization
-                findElements(child, tagName);
+                findElements(child, tagName, text, visible);
         }
     }
-    findElements(this, tagName)
-    return elements;
+    findElements(this, tagName, text, visible)
+    return foundElements;
 }
 
-// if multiple elements match it will return the first one that is visible
-// or the last one if none is visible
-UIAElement.prototype.findElement = function(tagName, text) {
+// @param by "type[/text[:visible]]"
+UIAElement.prototype.findElement = function(by) {
+    var tagName;
+    var text;
+    var visible = 1;
+    var sep = by.indexOf('/');
+    if (sep != -1) {
+        tagName = by.substring(0, sep);
+        var len = by.length;
+        if (len > 10 && by.substring(len - 10) === ":invisible") {
+            text = by.substring(sep + 1, len - 10);
+            visible = 0;
+        } else {
+            text = by.substring(sep + 1);
+        }
+    } else {
+        tagName = by;
+        text = '';
+    }
+
     var foundElement;
-    var foundVisible = false;
-    var findElement = function(element, tagName, text) {
+    var findElement = function(element, tagName, text, visible) {
         var children = element.elements();
         var numChildren = children.length;
         for ( var i = 0; i < numChildren; i++) {
             var child = children[i];
-            if (child.matchesTagNameAndText(tagName, text)) {
+            if (child.matchesBy(tagName, text, visible)) {
                 foundElement = child;
-                foundVisible = child.isVisible();
-                if (foundVisible)
-                    return;
+                return;
             }
             if (child.hasChildren()) { // big optimization
-                findElement(child, tagName, text);
-                if (foundVisible)
+                findElement(child, tagName, text, visible);
+                if (foundElement)
                     return;
             }
         }
     }
-    findElement(this, tagName, text)
+    findElement(this, tagName, text, visible)
     return foundElement;
 }
 
-UIAElement.prototype.findElementAndSetKey = function(tagName, text, key) {
-    var foundElement = this.findElement(tagName, text);
-    if (foundElement)
-        elements[key] = foundElement;
-    return foundElement;
+var elements = new Array();
+var globalElementCounter = 0;
+
+// @return [{'ELEMENT': var_name}, ...]
+UIAElement.prototype.findElementsAndSetKeys = function(by) {
+    var json = '[';
+    var foundElements = this.findElements(by);
+    for ( var i = 0; i < foundElements.length; i++) {
+        var varName = 'wde' + globalElementCounter++;
+        elements[varName] = foundElements[i];
+        if (i > 0)
+            json += ',';
+        json += '{"ELEMENT":' + '"' + varName + '"' + '}';
+    }
+    json += ']';
+    return json;
+}
+
+// @return var_namne
+UIAElement.prototype.findElementAndSetKey = function(by) {
+    var foundElement = this.findElement(by);
+    if (foundElement) {
+        var varName = 'wde' + globalElementCounter++;
+        elements[varName] = foundElement;
+        return varName;
+    }
+    return '';
 }
 
 // getPageSource
@@ -286,4 +333,56 @@ UIAElement.prototype.getElementSize = function() {
     return '{"width":' + size.width + ',"height":' + size.height + '}';
 }
 
+// touch
 
+// does a flick in the middle of the screen of size 1/4 of screen
+// using the direction corresponding to xSpeed/ySpeed
+touchFlickFromSpeed = function(xSpeed, ySpeed) {
+    // get x, y of vector that provides the direction given by xSpeed/ySpeed and
+    // has length .25
+    var mult = Math.sqrt((0.25 * 0.25) / (xSpeed * xSpeed + ySpeed * ySpeed));
+    var x = mult * xSpeed;
+    var y = mult * ySpeed;
+
+    // translate to flick in the middle of the screen
+    var options = {
+        startOffset : {
+            x : 0.5 - .5 * x,
+            y : 0.5 - .5 * y 
+        },
+        endOffset : {
+            x : 0.5 + .5 * x,
+            y : 0.5 + .5 * y
+        }
+    };
+
+    var mainWindow = UIATarget.localTarget().frontMostApp().mainWindow();
+    mainWindow.flickInsideWithOptions(options);
+}
+
+// similar to flick but does a longer movement in the direction of the swipe
+// does a swipe in the middle of the screen of size 1/2 of screen
+// using the direction corresponding to xSpeed/ySpeed
+touchSwipeFromSpeed = function(xSpeed, ySpeed) {
+    // get x, y of vector that provides the direction given by xSpeed/ySpeed and
+    // has length .50
+    var mult = Math.sqrt((0.5 * 0.5) / (xSpeed * xSpeed + ySpeed * ySpeed));
+    var x = mult * xSpeed;
+    var y = mult * ySpeed;
+
+    // translate to swipe in the middle of the screen
+    var options = {
+        startOffset : {
+            x : 0.5 - .25 * x,
+            y : 0.5 - .25 * y
+        },
+        endOffset : {
+            x : 0.5 + .75 * x,
+            y : 0.5 + .75 * y
+        },
+        duration : 0.2
+    };
+
+    var mainWindow = UIATarget.localTarget().frontMostApp().mainWindow();
+    mainWindow.dragInsideWithOptions(options);
+}

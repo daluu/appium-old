@@ -153,52 +153,34 @@ def set_value(session_id='', element_id=''):
 
 @app.route('/wd/hub/session/<session_id>/elements', method='POST')
 def find_elements(session_id=''):
-    status = 0
-    found_elements = []
     try:
         # TODO: need to support more locator_strategy's
-        request_data = request.body.read()
-        locator_strategy = json.loads(request_data).get('using')
-        element_type = json.loads(request_data).get('value')
+        json_request_data = json.loads(request.body.read())
+        locator_strategy = json_request_data.get('using')
+        value = json_request_data.get('value')
 
-        ios_request = "wd_frame.findElements('%s').length" % element_type
-        number_of_items = int(app.ios_client.proxy(ios_request)[0][1])
-
-        for i in range(number_of_items):
-            var_name = 'wde' + str(int(time() * 1000000))
-            ios_request = "elements['%s'] = wd_frame.findElements('%s')[%s]" % (var_name, element_type, i)
-            ios_response = app.ios_client.proxy(ios_request)
-            found_elements.append({'ELEMENT':var_name})
+        ios_request = "wd_frame.findElementsAndSetKeys('%s')" % value
+        ios_response = app.ios_client.proxy(ios_request)
+        found_elements = json.loads(ios_response[0][1])
+        return {'sessionId': '1', 'status': 0, 'value': found_elements}
     except:
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
 
-    app_response = {'sessionId': '1',
-                'status': status,
-                'value': found_elements}
-    return app_response
-
 @app.route('/wd/hub/session/<session_id>/element', method='POST')
 def find_element(session_id=''):
     try:
-        status = 7
-        request_data = request.body.read()
-        print request_data
-        locator_strategy = json.loads(request_data).get('using')
-        value = json.loads(request_data).get('value')
-        # value is "tag_name/text" (i.e. "button/login")
-        sep = value.index('/')
-        tag_name = value[0:sep]
-        text = value[sep + 1:]
-        var_name = 'wde' + str(int(time() * 1000000))
+        json_request_data = json.loads(request.body.read())
+        locator_strategy = json_request_data.get('using')
+        value = json_request_data.get('value')
 
-        ios_request = "wd_frame.findElementAndSetKey('%s', '%s', '%s')" % (tag_name, text, var_name)
+        ios_request = "wd_frame.findElementAndSetKey('%s')" % value
         ios_response = app.ios_client.proxy(ios_request)
-        element = ios_response[0][1];
-        if (element != ''):
-            status = 0
+        var_name = ios_response[0][1];
+        if (var_name == ''):
+            return {'sessionId': '1', 'status': 7};
         found_element = {'ELEMENT':var_name}
-        return {'sessionId': '1', 'status': status, 'value': found_element}
+        return {'sessionId': '1', 'status': 0, 'value': found_element}
     except:
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
@@ -246,7 +228,7 @@ def set_orientation(session_id=''):
 def implicit_wait(session_id=''):
     try:
         request_data = request.body.read()
-        timeoutSeconds = json.loads(request_data).get('ms') / 1000;
+        timeoutSeconds = json.loads(request_data).get('ms') / 1000
         app.ios_client.proxy("setImplicitWait('%s')" % timeoutSeconds)
         return {'sessionId': '1', 'status': 0}
     except:
@@ -280,6 +262,22 @@ def element_size(session_id='', element_id=''):
         script = "elements['%s'].getElementSize()" % element_id
         size = json.loads(app.ios_client.proxy(script)[0][1])
         return {'sessionId': '1', 'status': 0, 'value': size}
+    except:
+        response.status = 400
+        return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
+
+@app.route('/wd/hub/session/<session_id>/touch/flick', method='POST')
+def touch_flick(session_id=''):
+    try:
+        json_request_data = json.loads(request.body.read())
+        x_speed = json_request_data.get('xSpeed')
+        y_speed = json_request_data.get('ySpeed')
+        swipe = json_request_data.get('swipe')
+        if (swipe):
+            app.ios_client.proxy("touchSwipeFromSpeed(%s, %s)" % (x_speed, y_speed))
+        else:
+            app.ios_client.proxy("touchFlickFromSpeed(%s, %s)" % (x_speed, y_speed))
+        return {'sessionId': '1', 'status': 0}
     except:
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};

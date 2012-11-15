@@ -136,6 +136,7 @@ class Appium:
                 for item in xml.split('<response>')[1:]:
                     results.append(item.split('</response>')[0].split(',',1))
                 return results
+            sleep(0.1) # relieve the cpu a little
 
     def stop(self):
         if not self.is_running():
