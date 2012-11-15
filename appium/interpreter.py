@@ -8,7 +8,8 @@ def launch(app=None, udid=None):
         
         utils = os.path.join(os.path.dirname(os.path.realpath(__file__)),
             "js/interpreter_utils.js")
-        js = "".join(open(utils).read().splitlines())
+        with open(utils) as file:
+	    js = "".join(file.read().splitlines())
         print client.proxy(js)[0][1]
 
         print ""
