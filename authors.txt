@@ -5,5 +5,5 @@ E. James Infusino <jinfusino@gmail.com>
 Jason Huggins <hugs@saucelabs.com>
 Jason Carr <jcarr@saucelabs.com>
 Jayme Deffenbaugh <jdeffenbaugh@me.com>
-R. Salvador <>
+Roman Salvador <>
 Luke Inman-Semerau <>
