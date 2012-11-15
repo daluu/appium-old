@@ -1,10 +1,15 @@
 from appium import Appium
-import readline
+import os, readline
 
 def launch(app=None, udid=None):
     if app:
         client = Appium(app, udid)
         client.start()
+        
+        utils = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+            "js/interpreter_utils.js")
+        js = "".join(open(utils).read().splitlines())
+        print client.proxy(js)[0][1]
 
         print ""
         print "Enter UIAutomation Command (type 'quit' to quit):"
