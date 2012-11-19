@@ -40,6 +40,7 @@ def status():
 
 @app.route('/wd/hub/session', method='POST')
 def create_session():
+    app.ios_client.start()
     redirect('/wd/hub/session/1')
 
 @app.route('/wd/hub/session/<session_id>', method='GET')
@@ -312,6 +313,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     app.ios_client = Appium(args.app, args.UDID)
-    app.ios_client.start()
     run(app, host='0.0.0.0', port=args.port)
 
