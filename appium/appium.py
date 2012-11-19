@@ -145,9 +145,9 @@ class Appium:
     def read_response(self):
         # Wait up to 10 minutes for a response
         start_time = time()
+        filename = str(self.command_index) + '-resp.txt'
+        filepath = os.path.join(self.temp_dir, filename)
         while time() - start_time < 600:
-            filename = str(self.command_index) + '-resp.txt'
-            filepath = os.path.join(self.temp_dir, filename)
             if exists(filepath):
                 results = []
                 with open(filepath,'r') as file:
@@ -167,12 +167,17 @@ class Appium:
         # Kill Instruments if it's not being nice
         start_time = time()
         while (time() - start_time < 15 and self.instruments_process.poll() == None):
-            pass
-        if self.instruments_process.poll() is None:
+            sleep(1)
+        numRetry = 10
+        while (--numRetry >= 0 and self.instruments_process.poll() is None):
             self.instruments_process.terminate()
+            sleep(1)
+        if self.instruments_process.poll() is None:
+            raise Error('instruments process did not finish')
 
         # Kill iOS Simulator
         call("""/usr/bin/osascript -e 'tell app "iPhone Simulator" to quit'""", shell=True)
+        sleep(2) # give it some extra time
         self.simulator_is_running = False
 
 if __name__ == '__main__':
