@@ -26,6 +26,8 @@ from time import time
 from time import sleep
 
 app = Bottle()
+session_storage = {}
+local_storage = {}
 
 @app.get('/favicon.ico')
 def get_favicon():
@@ -302,6 +304,51 @@ def touch_flick(session_id=''):
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
 
+@app.route('/wd/hub/session/<session_id>/storage', method='GET')
+def get_session_storage(session_id=''):
+    if not session_storage.has_key(session_id):
+        session_storage[session_id] = {}
+    return {'sessionId': '1', 'status': 0, 'value': session_storage[session_id].keys() }
+
+@app.route('/wd/hub/session/<session_id>/storage', method='POST')
+def post_session_storage(session_id=''):
+    json_request_data = json.loads(request.body.read())
+    key = json_request_data.get('key')
+    value = json_request_data.get('value')
+    if not session_storage.has_key(session_id):
+        session_storage[session_id] = {}
+    session_storage[session_id][key] = value
+    return {'sessionId': '1', 'status': 0 }
+
+@app.route('/wd/hub/session/<session_id>/storage', method='DELETE')
+def delete_session_storage(session_id=''):
+    if not session_storage.has_key(session_id):
+        session_storage[session_id] = {}
+    session_storage[session_id] = {}
+    return {'sessionId': '1', 'status': 0 }
+
+@app.route('/wd/hub/session/<session_id>/key/<key>', method='GET')
+def get_session_key(session_id='', key=''):
+    if not session_storage.has_key(session_id):
+        session_storage[session_id] = {}
+    if not session_storage[session_id].has_key(key):
+        return {'sessionId': '1', 'status': 0, 'value': None}
+    else:
+        return {'sessionId': '1', 'status': 0, 'value': session_storage[session_id][key]}
+
+@app.route('/wd/hub/session/<session_id>/key/<key>', method='DELETE')
+def delete_session_key(session_id='', key=''):
+    if not session_storage.has_key(session_id):
+        session_storage[session_id] = {}
+    if session_storage[session_id].has_key(key):
+        session_storage[session_id].pop(key)
+    return {'sessionId': '1', 'status': 0, 'value': session_storage[session_id][key]}
+
+@app.route('/wd/hub/session/<session_id>/size', method='GET')
+def delete_session_storage(session_id=''):
+    if not session_storage.has_key(session_id):
+        session_storage[session_id] = {}
+    return {'sessionId': '1', 'status': 0, 'value': len(session_storage[session_id].keys())}
 
 if __name__ == '__main__':
     import argparse
