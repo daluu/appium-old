@@ -304,6 +304,20 @@ def touch_flick(session_id=''):
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
 
+@app.route('/wd/hub/session/<session_id>/location', method='POST')
+def post_location(session_id=''):
+    try:
+        json_request_data = json.loads(request.body.read())
+        latitude = json_request_data.get('latitude')
+        longitude = json_request_data.get('longitude')
+        altitude = json_request_data.get('altitude')
+        app.ios_client.proxy('target.setLocationWithOptions({"latitude": %s, "longitude": %s},{"altitude": %s})' % (
+        latitude, longitude, altitude))
+        return {'sessionId': '1', 'status': 0}
+    except:
+        response.status = 400
+        return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])}
+
 @app.route('/wd/hub/session/<session_id>/storage', method='GET')
 def get_session_storage(session_id=''):
     if not session_storage.has_key(session_id):
