@@ -278,7 +278,7 @@ def post_accept_alert(session_id=''):
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/dismiss_alert', method='POST')
-def post_accept_alert(session_id=''):
+def post_dismiss_alert(session_id=''):
     status = 0
     ios_response = ''
     try:
