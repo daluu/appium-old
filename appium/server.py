@@ -345,7 +345,7 @@ def delete_session_key(session_id='', key=''):
     return {'sessionId': '1', 'status': 0, 'value': session_storage[session_id][key]}
 
 @app.route('/wd/hub/session/<session_id>/size', method='GET')
-def delete_session_storage(session_id=''):
+def get_session_size(session_id=''):
     if not session_storage.has_key(session_id):
         session_storage[session_id] = {}
     return {'sessionId': '1', 'status': 0, 'value': len(session_storage[session_id].keys())}
