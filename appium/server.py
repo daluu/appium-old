@@ -26,7 +26,6 @@ from time import time
 from time import sleep
 
 app = Bottle()
-session_storage = {}
 local_storage = {}
 
 @app.get('/favicon.ico')
@@ -246,6 +245,54 @@ def set_orientation(session_id=''):
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
 
+@app.route('/wd/hub/session/<session_id>/alert_text', method='GET')
+def get_alert_text(session_id=''):
+    status = 0
+    ios_response = ''
+    try:
+        script = "target.frontMostApp().alert().name();"
+        ios_response = app.ios_client.proxy(script)[0][1]
+    except:
+        response.status = 400
+        return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
+
+    app_response = {'sessionId': '1',
+                    'status': status,
+                    'value': ios_response}
+    return app_response
+
+@app.route('/wd/hub/session/<session_id>/accept_alert', method='POST')
+def post_accept_alert(session_id=''):
+    status = 0
+    ios_response = ''
+    try:
+        script = "target.frontMostApp().alert().defaultButton().tap();"
+        ios_response = app.ios_client.proxy(script)[0][1]
+    except:
+        response.status = 400
+        return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
+
+    app_response = {'sessionId': '1',
+                    'status': status,
+                    'value': ios_response}
+    return app_response
+
+@app.route('/wd/hub/session/<session_id>/dismiss_alert', method='POST')
+def post_accept_alert(session_id=''):
+    status = 0
+    ios_response = ''
+    try:
+        script = "target.frontMostApp().alert().cancelButton().tap();"
+        ios_response = app.ios_client.proxy(script)[0][1]
+    except:
+        response.status = 400
+        return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};
+
+    app_response = {'sessionId': '1',
+                    'status': status,
+                    'value': ios_response}
+    return app_response
+
 @app.route('/wd/hub/session/<session_id>/timeouts/implicit_wait', method='POST')
 def implicit_wait(session_id=''):
     try:
@@ -318,49 +365,49 @@ def post_location(session_id=''):
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])}
 
-@app.route('/wd/hub/session/<session_id>/storage', method='GET')
-def get_session_storage(session_id=''):
-    if not session_storage.has_key(session_id):
-        session_storage[session_id] = {}
-    return {'sessionId': '1', 'status': 0, 'value': session_storage[session_id].keys() }
+@app.route('/wd/hub/session/<session_id>/local_storage', method='GET')
+def get_local_storage(session_id=''):
+    if not local_storage.has_key(session_id):
+        local_storage[session_id] = {}
+    return {'sessionId': '1', 'status': 0, 'value': local_storage[session_id].keys() }
 
-@app.route('/wd/hub/session/<session_id>/storage', method='POST')
-def post_session_storage(session_id=''):
+@app.route('/wd/hub/session/<session_id>/local_storage', method='POST')
+def post_local_storage(session_id=''):
     json_request_data = json.loads(request.body.read())
     key = json_request_data.get('key')
     value = json_request_data.get('value')
-    if not session_storage.has_key(session_id):
-        session_storage[session_id] = {}
-    session_storage[session_id][key] = value
+    if not local_storage.has_key(session_id):
+        local_storage[session_id] = {}
+    local_storage[session_id][key] = value
     return {'sessionId': '1', 'status': 0 }
 
-@app.route('/wd/hub/session/<session_id>/storage', method='DELETE')
-def delete_session_storage(session_id=''):
-    session_storage[session_id] = {}
+@app.route('/wd/hub/session/<session_id>/local_storage', method='DELETE')
+def delete_local_storage(session_id=''):
+    local_storage[session_id] = {}
     return {'sessionId': '1', 'status': 0 }
 
-@app.route('/wd/hub/session/<session_id>/key/<key>', method='GET')
-def get_session_key(session_id='', key=''):
-    if not session_storage.has_key(session_id):
-        session_storage[session_id] = {}
-    if not session_storage[session_id].has_key(key):
+@app.route('/wd/hub/session/<session_id>/local_storage/key/<key>', method='GET')
+def get_local_storage_key(session_id='', key=''):
+    if not local_storage.has_key(session_id):
+        local_storage[session_id] = {}
+    if not local_storage[session_id].has_key(key):
         return {'sessionId': '1', 'status': 0, 'value': None}
     else:
-        return {'sessionId': '1', 'status': 0, 'value': session_storage[session_id][key]}
+        return {'sessionId': '1', 'status': 0, 'value': local_storage[session_id][key]}
 
-@app.route('/wd/hub/session/<session_id>/key/<key>', method='DELETE')
-def delete_session_key(session_id='', key=''):
-    if not session_storage.has_key(session_id):
-        session_storage[session_id] = {}
-    if session_storage[session_id].has_key(key):
-        session_storage[session_id].pop(key)
-    return {'sessionId': '1', 'status': 0, 'value': session_storage[session_id][key]}
+@app.route('/wd/hub/session/<session_id>/local_storage/key/<key>', method='DELETE')
+def delete_local_storage_key(session_id='', key=''):
+    if not local_storage.has_key(session_id):
+        local_storage[session_id] = {}
+    if local_storage[session_id].has_key(key):
+        local_storage[session_id].pop(key)
+    return {'sessionId': '1', 'status': 0, 'value': local_storage[session_id][key]}
 
-@app.route('/wd/hub/session/<session_id>/size', method='GET')
-def get_session_size(session_id=''):
-    if not session_storage.has_key(session_id):
-        session_storage[session_id] = {}
-    return {'sessionId': '1', 'status': 0, 'value': len(session_storage[session_id].keys())}
+@app.route('/wd/hub/session/<session_id>/local_storage/size', method='GET')
+def get_local_storage_size(session_id=''):
+    if not local_storage.has_key(session_id):
+        local_storage[session_id] = {}
+    return {'sessionId': '1', 'status': 0, 'value': len(local_storage[session_id].keys())}
 
 if __name__ == '__main__':
     import argparse
