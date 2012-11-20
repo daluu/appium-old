@@ -322,8 +322,6 @@ def post_session_storage(session_id=''):
 
 @app.route('/wd/hub/session/<session_id>/storage', method='DELETE')
 def delete_session_storage(session_id=''):
-    if not session_storage.has_key(session_id):
-        session_storage[session_id] = {}
     session_storage[session_id] = {}
     return {'sessionId': '1', 'status': 0 }
 
