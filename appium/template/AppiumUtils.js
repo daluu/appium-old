@@ -44,10 +44,8 @@ UIAElement.prototype.matchesTagName = function(tagName) {
     return type.substring(3).toLowerCase() === tagName.toLowerCase();
 }
 
-UIAElement.prototype.matchesBy = function(tagName, text, visible) {
+UIAElement.prototype.matchesBy = function(tagName, text) {
     if (!this.matchesTagName(tagName))
-        return false;
-    if (visible !== this.isVisible())
         return false;
     if (text === '')
         return true;
@@ -64,80 +62,66 @@ UIAElement.prototype.matchesBy = function(tagName, text, visible) {
 
 // Finding elements
 
-// @param by "type[/text[:invisible]]"
+// @param by "type[/text]"
 UIAElement.prototype.findElements = function(by) {
     var tagName;
     var text;
-    var visible = 1;
     var sep = by.indexOf('/');
     if (sep != -1) {
         tagName = by.substring(0, sep);
-        var len = by.length;
-        if (len > 10 && by.substring(len - 10) === ":invisible") {
-            text = by.substring(sep + 1, len - 10);
-            visible = 0;
-        } else {
-            text = by.substring(sep + 1);
-        }
+        text = by.substring(sep + 1);
     } else {
         tagName = by;
         text = '';
     }
 
     var foundElements = new Array();
-    var findElements = function(element, tagName, text, visible) {
+    var findElements = function(element, tagName, text) {
         var children = element.elements();
         var numChildren = children.length;
         for ( var i = 0; i < numChildren; i++) {
             var child = children[i];
-            if (child.matchesBy(tagName, text, visible))
+            if (child.matchesBy(tagName, text))
                 foundElements.push(child);
             if (child.hasChildren()) // big optimization
-                findElements(child, tagName, text, visible);
+                findElements(child, tagName, text);
         }
     }
-    findElements(this, tagName, text, visible)
+    findElements(this, tagName, text)
     return foundElements;
 }
 
-// @param by "type[/text[:visible]]"
+// @param by "type[/text]"
 UIAElement.prototype.findElement = function(by) {
     var tagName;
     var text;
-    var visible = 1;
     var sep = by.indexOf('/');
     if (sep != -1) {
         tagName = by.substring(0, sep);
-        var len = by.length;
-        if (len > 10 && by.substring(len - 10) === ":invisible") {
-            text = by.substring(sep + 1, len - 10);
-            visible = 0;
-        } else {
-            text = by.substring(sep + 1);
-        }
+        text = by.substring(sep + 1);
     } else {
         tagName = by;
         text = '';
     }
 
     var foundElement;
-    var findElement = function(element, tagName, text, visible) {
+    var findElement = function(element, tagName, text) {
         var children = element.elements();
         var numChildren = children.length;
         for ( var i = 0; i < numChildren; i++) {
             var child = children[i];
-            if (child.matchesBy(tagName, text, visible)) {
+            if (child.matchesBy(tagName, text)) {
                 foundElement = child;
                 return;
             }
             if (child.hasChildren()) { // big optimization
-                findElement(child, tagName, text, visible);
+                findElement(child, tagName, text);
                 if (foundElement)
                     return;
             }
         }
     }
-    findElement(this, tagName, text, visible)
+    findElement(this, tagName, text)
     return foundElement;
 }
 
