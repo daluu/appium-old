@@ -92,7 +92,7 @@ def execute_script(session_id=''):
     request_data = request.body.read()
     try:
         script = json.loads(request_data).get('script')
-        ios_response = app.ios_client.proxy(script)[0][1]
+        ios_response = app.ios_client.proxy(script,True)
     except:
         response.status = 400
         return {'sessionId': '1', 'status': 13, 'value': str(sys.exc_info()[1])};

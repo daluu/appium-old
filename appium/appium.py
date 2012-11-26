@@ -124,9 +124,9 @@ class Appium:
     # Proxy a command to the simulator
     # using a file-based inter-process communication
     # between Python and Instruments.
-    def proxy(self, command):
+    def proxy(self, command, return_raw=False):
         self.write_command(command)
-        response = self.read_response()
+        response = self.read_response(return_raw)
         return response
 
     # Write the command to a file
@@ -142,19 +142,22 @@ class Appium:
             print 'ERROR WRITING COMMAND'
             self.command_index = self.command_index - 1
 
-    def read_response(self):
+    def read_response(self, return_raw=False):
         # Wait up to 10 minutes for a response
         start_time = time()
         filename = str(self.command_index) + '-resp.txt'
         filepath = os.path.join(self.temp_dir, filename)
         while time() - start_time < 600:
             if exists(filepath):
-                results = []
                 with open(filepath,'r') as file:
                     xml = file.read()
-                for item in xml.split('<response>')[1:]:
-                    results.append(item.split('</response>')[0].split(',',1))
-                return results
+                if return_raw:
+                    return xml
+                else:
+                    results = []
+                    for item in xml.split('<response>')[1:]:
+                        results.append(item.split('</response>')[0].split(',',1))
+                    return results
             sleep(0.1) # relieve the cpu a little
 
     def stop(self):
