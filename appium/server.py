@@ -202,7 +202,8 @@ def _find_element(session_id, context, many=False):
         locator_strategy = json_request_data.get('using')
         value = json_request_data.get('value')
 
-        ios_request = "%s.findElement%sAndSetKeys('%s')" % (context, 's' if many else '', value)
+        ios_request = "%s.findElement%sAndSetKey%s('%s')" % (context, 's' if many else ''
+                                                             , 's' if many else '', value)
         ios_response = app.ios_client.proxy(ios_request)
         if not many:
             var_name = ios_response[0][1]
