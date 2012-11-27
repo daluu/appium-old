@@ -411,7 +411,7 @@ def delete_local_storage_key(session_id='', key=''):
         local_storage[session_id] = {}
     if local_storage[session_id].has_key(key):
         local_storage[session_id].pop(key)
-    return {'sessionId': session_id, 'status': 0, 'value': local_storage[session_id][key]}
+    return {'sessionId': session_id, 'status': 0}
 
 @app.route('/wd/hub/session/<session_id>/local_storage/size', method='GET')
 def get_local_storage_size(session_id=''):
