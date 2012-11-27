@@ -144,6 +144,10 @@ def do_click(session_id='', element_id=''):
     try:
         script = "elements['%s'].tap()" % element_id
         ios_response = app.ios_client.proxy(script)[0][1]
+        if ios_response == 'undefined':
+            # Stale Reference Exception
+            return { 'sessionId': session_id, 'status': 10,
+                'value': {'message': 'undefined result tapping element %s' % element_id } }
     except:
         response.status = 400
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
