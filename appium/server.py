@@ -1,21 +1,21 @@
-#	Copyright 2012 Appium Committers
+#    Copyright 2012 Appium Committers
 #
-#	Licensed to the Apache Software Foundation (ASF) under one
-#	or more contributor license agreements.  See the NOTICE file
-#	distributed with this work for additional information
-#	regarding copyright ownership.  The ASF licenses this file
-#	to you under the Apache License, Version 2.0 (the
-#	"License"); you may not use this file except in compliance
-#	with the License.  You may obtain a copy of the License at
+#    Licensed to the Apache Software Foundation (ASF) under one
+#    or more contributor license agreements.  See the NOTICE file
+#    distributed with this work for additional information
+#    regarding copyright ownership.  The ASF licenses this file
+#    to you under the Apache License, Version 2.0 (the
+#    "License"); you may not use this file except in compliance
+#    with the License.  You may obtain a copy of the License at
 #
-#	http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
-#	Unless required by applicable law or agreed to in writing,
-#	software distributed under the License is distributed on an
-#	"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#	KIND, either express or implied.  See the License for the
-#	specific language governing permissions and limitations
-#	under the License.
+#    Unless required by applicable law or agreed to in writing,
+#    software distributed under the License is distributed on an
+#    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#    KIND, either express or implied.  See the License for the
+#    specific language governing permissions and limitations
+#    under the License.
 
 from appium import Appium
 from bottle import Bottle, request, response, redirect
@@ -101,8 +101,8 @@ def execute_script(session_id=''):
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
 
     app_response = {'sessionId': session_id,
-		'status': status,
-		'value': ios_response}
+        'status': status,
+        'value': ios_response}
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/text', method='GET')
@@ -117,8 +117,8 @@ def get_text(session_id='', element_id=''):
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
 
     app_response = {'sessionId': session_id,
-		'status': status,
-		'value': ios_response}
+        'status': status,
+        'value': ios_response}
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/attribute/<attribute>', method='GET')
@@ -133,8 +133,8 @@ def get_text(session_id='', element_id='', attribute=''):
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
 
     app_response = {'sessionId': session_id,
-		'status': status,
-		'value': ios_response}
+        'status': status,
+        'value': ios_response}
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/click', method='POST')
@@ -153,8 +153,8 @@ def do_click(session_id='', element_id=''):
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
 
     app_response = {'sessionId': session_id,
-		'status': status,
-		'value': ios_response}
+        'status': status,
+        'value': ios_response}
     return app_response
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/value', method='POST')
@@ -175,40 +175,43 @@ def set_value(session_id='', element_id=''):
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
 
     app_response = {'sessionId': session_id,
-		'status': status,
-		'value': ''}
+        'status': status,
+        'value': ''}
     return app_response
+
+@app.route('/wd/hub/session/<session_id>/element/<element_id>/elements', method='POST')
+def element_find_elements(session_id='', element_id=''):
+    return _find_element(session_id, "elements['%s']" % element_id, many=True)
 
 @app.route('/wd/hub/session/<session_id>/elements', method='POST')
 def find_elements(session_id=''):
+    return _find_element(session_id, "wd_frame", many=True)
+
+@app.route('/wd/hub/session/<session_id>/element/<element_id>/element', method='POST')
+def element_find_element(session_id='', element_id=''):
+    return _find_element(session_id, "elements['%s']" % element_id)
+
+@app.route('/wd/hub/session/<session_id>/element', method='POST')
+def find_element(session_id=''):
+    return _find_element(session_id, "wd_frame")
+
+def _find_element(session_id, context, many=False):
     try:
         # TODO: need to support more locator_strategy's
         json_request_data = json.loads(request.body.read())
         locator_strategy = json_request_data.get('using')
         value = json_request_data.get('value')
 
-        ios_request = "wd_frame.findElementsAndSetKeys('%s')" % value
+        ios_request = "%s.findElement%sAndSetKeys('%s')" % (context, 's' if many else '', value)
         ios_response = app.ios_client.proxy(ios_request)
-        found_elements = json.loads(ios_response[0][1])
+        if not many:
+            var_name = ios_response[0][1]
+            if (var_name == ''):
+                return {'sessionId': session_id, 'status': 7};
+            found_elements = {'ELEMENT':var_name}
+        else:
+            found_elements = json.loads(ios_response[0][1])
         return {'sessionId': session_id, 'status': 0, 'value': found_elements}
-    except:
-        response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
-
-@app.route('/wd/hub/session/<session_id>/element', method='POST')
-def find_element(session_id=''):
-    try:
-        json_request_data = json.loads(request.body.read())
-        locator_strategy = json_request_data.get('using')
-        value = json_request_data.get('value')
-
-        ios_request = "wd_frame.findElementAndSetKey('%s')" % value
-        ios_response = app.ios_client.proxy(ios_request)
-        var_name = ios_response[0][1];
-        if (var_name == ''):
-            return {'sessionId': session_id, 'status': 7};
-        found_element = {'ELEMENT':var_name}
-        return {'sessionId': session_id, 'status': 0, 'value': found_element}
     except:
         response.status = 400
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
