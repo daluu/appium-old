@@ -425,15 +425,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A webdriver-compatible server for use with native and hybrid iOS applications.')
     parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
     parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
+    parser.add_argument('-a', '--address', type=str, default=None, help='ip address to listen on')
     parser.add_argument('-p', '--port', type=int, default=4723, help='port to listen on')
 
     args = parser.parse_args()
     app.ios_client = Appium(args.app, args.UDID)
-    try:
-        host = socket.gethostbyname(socket.gethostname())
-    except:
-        host = '127.0.0.1'
-    app.SESSION_ID = "%s:%d" % (host, args.port)
+    if args.address is None:
+        try:
+            args.address = socket.gethostbyname(socket.gethostname())
+        except:
+            args.address = '127.0.0.1'
+    app.SESSION_ID = "%s:%d" % (args.address, args.port)
     app.started = False
-    run(app, host=host, port=args.port)
-
+    run(app, host=args.address, port=args.port)
