@@ -1,22 +1,22 @@
  /**
- *	Copyright 2012 Appium Committers
+ *    Copyright 2012 Appium Committers
  *
- *	Licensed to the Apache Software Foundation (ASF) under one
- *	or more contributor license agreements.  See the NOTICE file
- *	distributed with this work for additional information
- *	regarding copyright ownership.  The ASF licenses this file
- *	to you under the Apache License, Version 2.0 (the
- *	"License"); you may not use this file except in compliance
- *	with the License.  You may obtain a copy of the License at
+ *    Licensed to the Apache Software Foundation (ASF) under one
+ *    or more contributor license agreements.  See the NOTICE file
+ *    distributed with this work for additional information
+ *    regarding copyright ownership.  The ASF licenses this file
+ *    to you under the Apache License, Version 2.0 (the
+ *    "License"); you may not use this file except in compliance
+ *    with the License.  You may obtain a copy of the License at
  *
- *	http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
- *	Unless required by applicable law or agreed to in writing,
- *	software distributed under the License is distributed on an
- *	"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *	KIND, either express or implied.  See the License for the
- *	specific language governing permissions and limitations
- *	under the License.
+ *    Unless required by applicable law or agreed to in writing,
+ *    software distributed under the License is distributed on an
+ *    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *    KIND, either express or implied.  See the License for the
+ *    specific language governing permissions and limitations
+ *    under the License.
  */
 
 #import "AppiumUtils.js"
@@ -26,11 +26,11 @@
 // delay in seconds
 function delay(secs)
 {
-	var date = new Date();
-	var curDate = null;
-	
-	do { curDate = new Date(); }
-	while(curDate-date < (secs * 1000.0));
+    var date = new Date();
+    var curDate = null;
+    
+    do { curDate = new Date(); }
+    while(curDate-date < (secs * 1000.0));
 } 
 
 /* ***** main loop ***** */
@@ -43,6 +43,12 @@ var host = target.host();
 var mainWindow  = application.mainWindow();
 var wd_frame = mainWindow
 var elements = {}
+var bufferFlusher = [];
+// 16384 is apprently the buffer size used by instruments
+for (i=0; i < 16384; i++) {
+    bufferFlusher.push('*');
+}
+bufferFlusher = bufferFlusher.join('');
 
 // loop variables
 var runLoop = true;
@@ -64,40 +70,42 @@ while (runLoop)
     {
         var resp = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<collection>\n";
         var instructionText = instruction.stdout;
-		try
-		{
-			var jsCommands = instructionText.split('\n');
-			for (var jsCommandIndex = 0; jsCommandIndex < jsCommands.length; jsCommandIndex++)
-			{
-           		var jsCommand = jsCommands[jsCommandIndex];
-				try
-				{
-					UIALogger.logDebug(instructionNumber.toString() + "." + jsCommandIndex.toString() + " - Command   - " + jsCommand);
-           			var evalResult = eval(jsCommand);
-           			if (evalResult == null)
-           			{
-			   			evalResult = "";
-		       		}
-					UIALogger.logDebug(instructionNumber.toString() + "." + jsCommandIndex.toString() + " - Response  - " + evalResult.toString());
-	           		resp = resp + "<response>" + "0," + evalResult.toString() + "</response>\n";
-				}
-				catch (err)
-				{
-					UIALogger.logWarning("js command execution failed: " + err.description);
-					resp = resp + "<response>" + "-1," + err.description + "</response>\n";
-				}
-			}
-		}
-		catch (err)
-		{
-			UIALogger.logWarning("could not parse intruction set: " + err.description);
-			resp = resp + "<error>could not parse intruction set</error>\n";
-		}
+        try
+        {
+            var jsCommands = instructionText.split('\n');
+            for (var jsCommandIndex = 0; jsCommandIndex < jsCommands.length; jsCommandIndex++)
+            {
+                var jsCommand = jsCommands[jsCommandIndex];
+                try
+                {
+                    UIALogger.logDebug(instructionNumber.toString() + "." + jsCommandIndex.toString() + " - Command   - " + jsCommand);
+                       var evalResult = eval(jsCommand);
+                       if (evalResult == null)
+                       {
+                           evalResult = "";
+                       }
+                    UIALogger.logDebug(instructionNumber.toString() + "." + jsCommandIndex.toString() + " - Response  - " + evalResult.toString());
+                       resp = resp + "<response>" + "0," + evalResult.toString() + "</response>\n";
+                }
+                catch (err)
+                {
+                    UIALogger.logWarning("js command execution failed: " + err.description);
+                    resp = resp + "<response>" + "-1," + err.description + "</response>\n";
+                }
+            }
+        }
+        catch (err)
+        {
+            UIALogger.logWarning("could not parse intruction set: " + err.description);
+            resp = resp + "<error>could not parse intruction set</error>\n";
+        }
         resp = resp + "</collection>\n";
-        UIALogger.logDebug("INSTRUCTION SET #" + instructionNumber.toString() + " XML RESPONSE:\n\n" + resp + "\n");
-        host.performTaskWithPathArgumentsTimeout("/usr/bin/python", [ iosAutoPath + "writeResponse.py" ,responseFile, resp], 5);
-		UIALogger.logDebug("END INSTRUCTION SET #" + instructionNumber.toString());
-  	    instructionNumber++;
-		UIALogger.logDebug("BEGIN INSTRUCTION SET #" + instructionNumber.toString());
+        UIALogger.logMessage("START RESPONSE INSTRUCTION SET #" + instructionNumber.toString() + " _APPIUM_XML_RESPONSE:\n\n" + resp + 
+            "\nEND INSTRUCTION SET #" + instructionNumber.toString());
+          instructionNumber++;
+        // Need to write out a large enough chunk of text in order for the stdout buffer to flush itself
+        // since instruments doesn't appear to be flushing it themselves.
+        UIALogger.logDebug(bufferFlusher);
+        UIALogger.logDebug("BEGIN INSTRUCTION SET #" + instructionNumber.toString());
     }
 }

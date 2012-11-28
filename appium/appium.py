@@ -18,6 +18,7 @@
 #	under the License.
 
 import ConfigParser
+import fcntl 
 import glob
 import os
 from os.path import exists
@@ -90,6 +91,8 @@ class Appium:
                        '-e', 'UIARESULTSPATH', self.temp_dir])
 
         self.instruments_process = Popen(command, stdout=PIPE, stdin=None, stderr=PIPE)
+        # needed to 'read' from the stdout pipe without blocking waiting for the process to finish
+        fcntl.fcntl(self.instruments_process.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         return self.instruments_process.poll() is None  # Should be True
 
     def simulator_state(self):
@@ -145,12 +148,19 @@ class Appium:
     def read_response(self, return_raw=False):
         # Wait up to 10 minutes for a response
         start_time = time()
-        filename = str(self.command_index) + '-resp.txt'
-        filepath = os.path.join(self.temp_dir, filename)
+        output = ''
         while time() - start_time < 600:
-            if exists(filepath):
-                with open(filepath,'r') as file:
-                    xml = file.read()
+            try:
+                output += self.instruments_process.stdout.read()
+                if "Fail: The target application appears to have died" in output:
+                    return
+                if "Script threw an uncaught JavaScript error:" in output:
+                    print output
+                    return
+                if "END INSTRUCTION SET #" not in output:
+                    sleep(0.1)
+                    continue
+                xml = output.split('END INSTRUCTION SET #')[0].split('_APPIUM_XML_RESPONSE:')[1]
                 if return_raw:
                     return xml
                 else:
@@ -158,6 +168,8 @@ class Appium:
                     for item in xml.split('<response>')[1:]:
                         results.append(item.split('</response>')[0].split(',',1))
                     return results
+            except IOError:
+                pass
             sleep(0.1) # relieve the cpu a little
 
     def stop(self):
