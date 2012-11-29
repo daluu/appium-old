@@ -58,6 +58,8 @@ var instructionNumber = 0;
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#POST_/session/:sessionId/timeouts/implicit_wait
 target.setTimeout(0);
 
+var instruction;
+
 // main loop
 while (runLoop)
 {
@@ -65,7 +67,12 @@ while (runLoop)
     var responseFile = iosAutoPath + instructionNumber.toString() + "-resp.txt";
     // NOTE: performTasksWithPathArgumentsTimeouts takes a minimum on one second, this is
     // the reason each selenium commands takes minimum of 2 seconds
-    var instruction = host.performTaskWithPathArgumentsTimeout("/bin/cat", [instructionFile], 5);
+    try {
+        instruction = host.performTaskWithPathArgumentsTimeout("/bin/cat", [instructionFile], 5);
+    } catch (e) {
+        target.delay(0.5);
+        continue;
+    }
     if (instruction.exitCode == 0)
     {
         var resp = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<collection>\n";
