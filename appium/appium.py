@@ -28,9 +28,10 @@ from tempfile import mkdtemp
 from time import time, sleep
 
 class Appium:
-    def __init__(self, app='', udid=None):
+    def __init__(self, app='', udid=None, verbose=False):
         self.app = app
         self.device_udid = udid
+        self.verbose = verbose;
         self.instruments_process = None
         self.command_index = -1
 
@@ -58,7 +59,8 @@ class Appium:
     # Create temp dir
     def create_temp_dir(self):
         self.temp_dir = mkdtemp('', 'appium-')
-        #print self.temp_dir
+        if self.verbose:
+            print "temp_dir:", self.temp_dir
 
     # Copy files
     def copy_files(self):
@@ -151,7 +153,10 @@ class Appium:
         output = ''
         while time() - start_time < 600:
             try:
-                output += self.instruments_process.stdout.read()
+                new_output = self.instruments_process.stdout.read()
+                if self.verbose:
+                    print new_output
+                output += new_output
                 if "Fail: The target application appears to have died" in output:
                     return
                 if "Script threw an uncaught JavaScript error:" in output:
@@ -161,6 +166,8 @@ class Appium:
                     sleep(0.1)
                     continue
                 xml = output.split('END INSTRUCTION SET #')[0].split('_APPIUM_XML_RESPONSE:')[1]
+                if self.verbose:
+                    print "got response in", time() - start_time
                 if return_raw:
                     return xml
                 else:
@@ -201,7 +208,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='An interpreter for sending raw UIAutomation javascript commands to the simulator or a device')
     parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
+    parser.add_argument('-v', dest='verbose', action="store_true", default=False, help='verbose mode')
     parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
 
     args = parser.parse_args()
-    launch(args.app, args.UDID)
+    launch(args.app, args.UDID, args.verbose)
