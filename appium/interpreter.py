@@ -20,9 +20,9 @@
 from appium import Appium
 import os, readline
 
-def launch(app=None, udid=None):
+def launch(app=None, udid=None, verbose=False):
     if app:
-        client = Appium(app, udid)
+        client = Appium(app, udid, verbose)
         client.start()
         
         utils = os.path.join(os.path.dirname(os.path.realpath(__file__)),

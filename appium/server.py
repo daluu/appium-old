@@ -345,6 +345,16 @@ def element_size(session_id='', element_id=''):
     except:
         response.status = 400
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+    
+@app.route('/wd/hub/session/<session_id>/element/<element_id>/displayed', method='GET')
+def element_displayed(session_id='', element_id=''):
+    try:
+        script = "elements['%s'].isDisplayed()" % element_id
+        displayed = app.ios_client.proxy(script)[0][1]
+        return {'sessionId': session_id, 'status': 0, 'value': displayed == 'true'}
+    except:
+        response.status = 400
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/touch/flick', method='POST')
 def touch_flick(session_id=''):
@@ -425,12 +435,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='A webdriver-compatible server for use with native and hybrid iOS applications.')
     parser.add_argument('app', type=str, help='path to simulators .app file or the bundle_id of the desired target on device')
+    parser.add_argument('-v', dest='verbose', action="store_true", default=False, help='verbose mode')
     parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
     parser.add_argument('-a', '--address', type=str, default=None, help='ip address to listen on')
     parser.add_argument('-p', '--port', type=int, default=4723, help='port to listen on')
 
     args = parser.parse_args()
-    app.ios_client = Appium(args.app, args.UDID)
+    app.ios_client = Appium(args.app, args.UDID, args.verbose)
     if args.address is None:
         try:
             args.address = socket.gethostbyname(socket.gethostname())
