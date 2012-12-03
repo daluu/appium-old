@@ -326,7 +326,7 @@ typeKey = function(keyboard, k) {
         keyboard.typeString(String(k)); // regular key
 }
 
-// location/size
+// location/size/...
 
 UIAElement.prototype.getElementLocation = function() {
     var origin = this.rect().origin;
@@ -336,6 +336,10 @@ UIAElement.prototype.getElementLocation = function() {
 UIAElement.prototype.getElementSize = function() {
     var size = this.rect().size;
     return '{"width":' + size.width + ',"height":' + size.height + '}';
+}
+
+UIAElement.prototype.isDisplayed = function() {
+    return this.isVisible() == 1;
 }
 
 // touch
