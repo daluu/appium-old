@@ -191,9 +191,10 @@ class Appium:
         while (time() - start_time < 15 and self.instruments_process.poll() == None):
             sleep(1)
         numRetry = 10
-        while (--numRetry >= 0 and self.instruments_process.poll() is None):
+        while (numRetry >= 0 and self.instruments_process.poll() is None):
             self.instruments_process.terminate()
             sleep(1)
+            numRetry = numRetry - 1
         if self.instruments_process.poll() is None:
             raise Error('instruments process did not finish')
 
