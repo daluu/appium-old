@@ -196,7 +196,7 @@ class Appium:
             sleep(1)
             numRetry = numRetry - 1
         if self.instruments_process.poll() is None:
-            raise Error('instruments process did not finish')
+            raise Exception('instruments process did not finish')
 
         # Kill iOS Simulator
         call("""/usr/bin/osascript -e 'tell app "iPhone Simulator" to quit'""", shell=True)
