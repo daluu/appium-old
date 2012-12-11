@@ -20,9 +20,8 @@ To get started, clone the repo:<br />
 Next, change into the 'appium' directory, and install dependencies:<br />
 `pip install -r requirements.txt`
 
-To avoid a security dialog that can appear when launching your iOS app edit your /etc/authorization file:<br />
-`sudo vi /etc/authorization`<br />
-Find and replace &lt;false/&gt; with &lt;true/&gt; just after this line: &lt;key&gt;system.privilege.taskport&lt;/key&gt;
+To avoid a security dialog that can appear when launching your iOS app, you need to modify your /etc/authorization file. You can do this by settings the element following &lt;allow-root&gt; under &lt;key&gt;system.privilege.taskport&lt;/key&gt; to &lt;true/&gt; or by running the supplied python script (at your own risk)<br />
+`sudo python authorize.py`<br />
 
 To launch an interpreter for sending raw UIAutomation javascript commands run:<br />
 For the Simulator:<br />
