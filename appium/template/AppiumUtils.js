@@ -349,6 +349,11 @@ UIAElement.prototype.isDisplayed = function() {
     return this.isVisible() == 1;
 }
 
+// Return 'True' if element is Enabled.
+UIAElement.prototype.isEnabled = function() {
+    return this.isEnabled() == 1;
+}
+
 // touch
 
 // does a flick in the middle of the screen of size 1/4 of screen
