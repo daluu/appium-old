@@ -237,7 +237,6 @@ def get_screenshot(session_id=''):
         path = app.ios_client.temp_dir + "/Run 1/screenshot%s.png" % uid
         script = "takeScreenshot('screenshot%s')" % uid
         ios_response = app.ios_client.proxy(script)
-        app.ios_client._screenshot_count += 1
         with open(path, 'rb') as screenshot:
             encoded_file = base64.b64encode(screenshot.read())
         return {'sessionId': session_id, 'status': 0, 'value': encoded_file}
