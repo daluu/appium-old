@@ -372,6 +372,18 @@ def element_displayed(session_id='', element_id=''):
         response.status = 400
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
+
+@app.route('/wd/hub/session/<session_id>/element/<element_id>/enabled', method='GET')
+def element_enabled(session_id='', element_id=''):
+    try:
+        script = "elements['%s'].isEnabled()" % element_id
+        enabled = app.ios_client.proxy(script)[0][1]
+        return {'sessionId': session_id, 'status': 0, 'value': enabled == 'true'}
+    except:
+        response.status = 400
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
+
+
 @app.route('/wd/hub/session/<session_id>/touch/flick', method='POST')
 def touch_flick(session_id=''):
     try:
