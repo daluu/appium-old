@@ -83,7 +83,7 @@ def switch_to_frame(session_id=''):
             app.ios_client.proxy('wd_frame = %s' % frame)
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
                 'status': status,
@@ -100,7 +100,7 @@ def execute_script(session_id=''):
         ios_response = app.ios_client.proxy(script,True)
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
         'status': status,
@@ -116,7 +116,7 @@ def get_text(session_id='', element_id=''):
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
         'status': status,
@@ -132,7 +132,7 @@ def get_text(session_id='', element_id='', attribute=''):
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
         'status': status,
@@ -152,7 +152,7 @@ def do_click(session_id='', element_id=''):
                 'value': {'message': 'undefined result tapping element %s' % element_id } }
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
         'status': status,
@@ -174,7 +174,7 @@ def set_value(session_id='', element_id=''):
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
         'status': status,
@@ -210,25 +210,25 @@ def _find_element(session_id, context, many=False):
         if not many:
             var_name = ios_response[0][1]
             if (var_name == ''):
-                return {'sessionId': session_id, 'status': 7};
+                return {'sessionId': session_id, 'status': 7}
             found_elements = {'ELEMENT':var_name}
         else:
             found_elements = json.loads(ios_response[0][1])
         return {'sessionId': session_id, 'status': 0, 'value': found_elements}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/source', method='GET')
 def get_page_source(session_id=''):
     try:
         script = "wd_frame.getPageSource()"
         ios_response = app.ios_client.proxy(script)
-        page_source = ios_response[0][1];
+        page_source = ios_response[0][1]
         return {'sessionId': session_id, 'status': 0, 'value': page_source}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/screenshot', method='GET')
 def get_screenshot(session_id=''):
@@ -242,20 +242,20 @@ def get_screenshot(session_id=''):
         return {'sessionId': session_id, 'status': 0, 'value': encoded_file}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/orientation', method='GET')
 def get_orientation(session_id=''):
     try:
         status = 0
         ios_response = app.ios_client.proxy("getScreenOrientation()")
-        orientation = ios_response[0][1];
+        orientation = ios_response[0][1]
         if (orientation == "UNKNOWN"):
             status = 12 # invalid element state
         return {'sessionId': session_id, 'status': status, 'value': orientation}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/orientation', method='POST')
 def set_orientation(session_id=''):
@@ -264,13 +264,13 @@ def set_orientation(session_id=''):
         request_data = request.body.read()
         desired_orientation = json.loads(request_data).get('orientation')
         ios_response = app.ios_client.proxy("setScreenOrientation('%s')" % desired_orientation)
-        orientation = ios_response[0][1];
+        orientation = ios_response[0][1]
         if (orientation == "UNKNOWN"):
             status = 12 # invalid element state?
         return {'sessionId': session_id, 'status': status, 'value': orientation}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/alert_text', method='GET')
 def get_alert_text(session_id=''):
@@ -281,7 +281,7 @@ def get_alert_text(session_id=''):
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
                     'status': status,
@@ -297,7 +297,7 @@ def post_accept_alert(session_id=''):
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
                     'status': status,
@@ -313,7 +313,7 @@ def post_dismiss_alert(session_id=''):
         ios_response = app.ios_client.proxy(script)[0][1]
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
                     'status': status,
@@ -329,18 +329,18 @@ def implicit_wait(session_id=''):
         return {'sessionId': session_id, 'status': 0}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/keys', method='POST')
 def keys(session_id=''):
     try:
         request_data = request.body.read()
-        keys = json.loads(request_data).get('value')[0].encode('utf-8');
+        keys = json.loads(request_data).get('value')[0].encode('utf-8')
         ios_response = app.ios_client.proxy("sendKeysToActiveElement('%s')" % keys)
         return {'sessionId': session_id, 'status': 0}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/location', method='GET')
 def element_location(session_id='', element_id=''):
@@ -350,7 +350,7 @@ def element_location(session_id='', element_id=''):
         return {'sessionId': session_id, 'status': 0, 'value': location}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
     
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/size', method='GET')
 def element_size(session_id='', element_id=''):
@@ -360,7 +360,7 @@ def element_size(session_id='', element_id=''):
         return {'sessionId': session_id, 'status': 0, 'value': size}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
     
 @app.route('/wd/hub/session/<session_id>/element/<element_id>/displayed', method='GET')
 def element_displayed(session_id='', element_id=''):
@@ -398,7 +398,7 @@ def touch_flick(session_id=''):
         return {'sessionId': session_id, 'status': 0}
     except:
         response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
 @app.route('/wd/hub/session/<session_id>/location', method='POST')
 def post_location(session_id=''):

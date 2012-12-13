@@ -31,7 +31,7 @@ class Appium:
     def __init__(self, app='', udid=None, verbose=False):
         self.app = app
         self.device_udid = udid
-        self.verbose = verbose;
+        self.verbose = verbose
         self.instruments_process = None
         self.command_index = -1
 
