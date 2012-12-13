@@ -19,6 +19,17 @@
  *	under the License.
  */
 
+// Obtaining Device Property Information like Name, OS ver, Model etc
+
+ function getDeviceDetail() {
+    var deviceMap = new Object();
+    deviceMap['deviceName'] = UIATarget.localTarget.name();
+    deviceMap['deviceModel'] = UIATarget.localTarget.model();
+    deviceMap['systemName'] = UIATarget.localTarget.systemName();
+    deviceMap['systemVersion'] = UIATarget.localTarget.systemVersion();
+    return deviceMap;
+ }
+
 // Misc utils
 
 UIAElementNil.prototype.type = function() {
