@@ -24,6 +24,7 @@ import json
 import socket
 import sys
 import base64
+import uuid
 from time import time
 from time import sleep
 
@@ -232,8 +233,10 @@ def get_page_source(session_id=''):
 @app.route('/wd/hub/session/<session_id>/screenshot', method='GET')
 def get_screenshot(session_id=''):
     try:
-        path = app.ios_client.temp_dir + "/Run 1/screenshot.png"
-        ios_response = app.ios_client.proxy("takeScreenshot('screenshot')")
+        uid = str(uuid.uuid4())
+        path = app.ios_client.temp_dir + "/Run 1/screenshot%s.png" % uid
+        script = "takeScreenshot('screenshot%s')" % uid
+        ios_response = app.ios_client.proxy(script)
         with open(path, 'rb') as screenshot:
             encoded_file = base64.b64encode(screenshot.read())
         return {'sessionId': session_id, 'status': 0, 'value': encoded_file}
