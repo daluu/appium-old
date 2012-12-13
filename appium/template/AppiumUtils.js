@@ -219,6 +219,13 @@ UIAElement.prototype.getPageSource = function() {
     return source;
 }
 
+// screenshot
+
+function takeScreenshot(file) {
+    var screenshot = UIATarget.localTarget().captureScreenWithName(file);
+    return screenshot;
+}
+
 // screen orientation
 
 function getScreenOrientation() {

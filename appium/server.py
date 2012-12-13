@@ -23,6 +23,7 @@ from bottle import run, static_file
 import json
 import socket
 import sys
+import base64
 from time import time
 from time import sleep
 
@@ -224,6 +225,18 @@ def get_page_source(session_id=''):
         ios_response = app.ios_client.proxy(script)
         page_source = ios_response[0][1];
         return {'sessionId': session_id, 'status': 0, 'value': page_source}
+    except:
+        response.status = 400
+        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
+
+@app.route('/wd/hub/session/<session_id>/screenshot', method='GET')
+def get_screenshot(session_id=''):
+    try:
+        path = app.ios_client.temp_dir + "/Run 1/screenshot.png"
+        ios_response = app.ios_client.proxy("takeScreenshot('screenshot')")
+        with open(path, 'rb') as screenshot:
+            encoded_file = base64.b64encode(screenshot.read())
+        return {'sessionId': session_id, 'status': 0, 'value': encoded_file}
     except:
         response.status = 400
         return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])};
