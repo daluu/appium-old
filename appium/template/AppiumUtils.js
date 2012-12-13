@@ -23,10 +23,10 @@
 
  function getDeviceDetail() {
     var deviceMap = new Object();
-    deviceMap['deviceName'] = UIATarget.localTarget.name();
-    deviceMap['deviceModel'] = UIATarget.localTarget.model();
-    deviceMap['systemName'] = UIATarget.localTarget.systemName();
-    deviceMap['systemVersion'] = UIATarget.localTarget.systemVersion();
+    deviceMap['deviceName'] = UIATarget.localTarget().name();
+    deviceMap['deviceModel'] = UIATarget.localTarget().model();
+    deviceMap['systemName'] = UIATarget.localTarget().systemName();
+    deviceMap['systemVersion'] = UIATarget.localTarget().systemVersion();
     return deviceMap;
  }
 
