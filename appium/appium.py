@@ -154,6 +154,7 @@ class Appium:
         while time() - start_time < 600:
             try:
                 new_output = self.instruments_process.stdout.read()
+                new_output = new_output.rstrip('*').lstrip('*') # remove buffer-flusher characters
                 if self.verbose:
                     print new_output
                 output += new_output
