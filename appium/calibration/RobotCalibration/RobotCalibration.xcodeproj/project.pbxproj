@@ -399,6 +399,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RobotCalibration/RobotCalibration-Prefix.pch";
 				INFOPLIST_FILE = "RobotCalibration/RobotCalibration-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -410,6 +411,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RobotCalibration/RobotCalibration-Prefix.pch";
 				INFOPLIST_FILE = "RobotCalibration/RobotCalibration-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -426,6 +428,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RobotCalibration/RobotCalibration-Prefix.pch";
 				INFOPLIST_FILE = "RobotCalibrationTests/RobotCalibrationTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = octest;
@@ -443,6 +446,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RobotCalibration/RobotCalibration-Prefix.pch";
 				INFOPLIST_FILE = "RobotCalibrationTests/RobotCalibrationTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = octest;
@@ -468,6 +472,7 @@
 				3E166CA41683954A008893AA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		3E166CA51683954A008893AA /* Build configuration list for PBXNativeTarget "RobotCalibrationTests" */ = {
 			isa = XCConfigurationList;
@@ -476,6 +481,7 @@
 				3E166CA71683954A008893AA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
