@@ -49,6 +49,8 @@ while currentPoint <= 80 and driver.proxy('mainWindow.staticTexts()[0].value()')
 if currentPoint > 80:
 	raise Exception("Could not contact the iOS device")
 contactPoint = currentPoint
+coords = driver.proxy('mainWindow.staticTexts()[0].value()')
+screenCenter = (int(coords.split(',')[0][1:].replace(' ','')), int(coords.split(',')[1][:-1].replace(' ','')) )
 
 # return the device to the original position
 for i in range(contactPoint, 30, -1):
@@ -65,3 +67,4 @@ driver.stop()
 
 # print summary of calibration
 print 'Contact Point : ' + str(contactPoint)
+print 'Screen Center : (' + str(screenCenter[0]) + ',' + str(screenCenter[1]) + ')'
