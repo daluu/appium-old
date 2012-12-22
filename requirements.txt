@@ -1,1 +1,2 @@
 bottle>=0.10.11
+pyserial>=2.5
