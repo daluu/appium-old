@@ -28,18 +28,26 @@ class Bot():
             self.number = num
             self.angle = 30
 
-        def set_angle(self, new_position):
-            self.bot.send_command(self.number, new_position)
-            self.bot.position = new_position
+        def set_angle(self, new_angle):
+            self.bot.send_command(self.number, new_angle)
+            self.angle = new_angle
 
-        def move(self, desired_angle, delay=0.03, max_movement=1000):
+        def move(self, desired_angle, delay=0.1, max_movement=1000):
+
+            # determine the angles between the current angle and the desired angle
             intermediate_angles = []
             if self.angle < desired_angle:
-                intermediate_angles = range(self.angle, desired_angle)
+                intermediate_angles = range(self.angle, desired_angle + 1)
             elif desired_angle < self.angle:
-                intermediate_angles = range(self.angle, desired_angle, -1)
+                intermediate_angles = range(self.angle, desired_angle - 1, -1)
+            if self.angle in intermediate_angles:
+                intermediate_angles.remove(self.angle)
+
+            # only move the arm by the maximum amount
             if len(intermediate_angles) > max_movement:
                 intermediate_angles = intermediate_angles[:max_movement]
+
+            # move the arm 1 degree at a time
             for angle in intermediate_angles:
                 self.set_angle(angle)
                 sleep(delay)
@@ -55,10 +63,10 @@ class Bot():
 
     def send_command(self, command, position='0'):
         self.serial.write(command)
-        self.serial.write( chr(position))
+        self.serial.write(chr(position))
 
-    def move(self, a_angle, b_angle, c_angle, delay=0.03):
-        while self.position() is not (a_angle, b_angle, c_angle):
+    def move(self, a_angle, b_angle, c_angle, delay=0.01):
+        while self.a.angle is not a_angle and self.b.angle is not b_angle and self.c.angle is not c_angle:
             self.a.move(a_angle,0,1)
             self.b.move(b_angle,0,1)
             self.c.move(c_angle,0,1)
