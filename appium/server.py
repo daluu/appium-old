@@ -23,6 +23,7 @@ from bottle import run, static_file
 import json
 import socket
 import sys
+import os
 import base64
 import uuid
 from time import time
@@ -143,16 +144,20 @@ def get_text(session_id='', element_id='', attribute=''):
 def do_click(session_id='', element_id=''):
     status = 0
     ios_response = ''
-    try:
-        script = "elements['%s'].tap()" % element_id
-        ios_response = app.ios_client.proxy(script)[0][1]
-        if ios_response == 'undefined':
-            # Stale Reference Exception
-            return { 'sessionId': session_id, 'status': 10,
-                'value': {'message': 'undefined result tapping element %s' % element_id } }
-    except:
-        response.status = 400
-        return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
+
+    if app.uses_robot:
+        raise Exception('Robot functionality is not yet implemented for /element/click')
+    else:
+        try:
+            script = "elements['%s'].tap()" % element_id
+            ios_response = app.ios_client.proxy(script)[0][1]
+            if ios_response == 'undefined':
+                # Stale Reference Exception
+                return { 'sessionId': session_id, 'status': 10,
+                    'value': {'message': 'undefined result tapping element %s' % element_id } }
+        except:
+            response.status = 400
+            return {'sessionId': session_id, 'status': 13, 'value': str(sys.exc_info()[1])}
 
     app_response = {'sessionId': session_id,
         'status': status,
@@ -471,10 +476,27 @@ if __name__ == '__main__':
     parser.add_argument('-v', dest='verbose', action="store_true", default=False, help='verbose mode')
     parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
     parser.add_argument('-a', '--address', type=str, default=None, help='ip address to listen on')
+    parser.add_argument('-b', '--bot_usb_address', type=str, default=None, help='bot usb address (e.g. /dev/tty.usbmodem0)')
     parser.add_argument('-p', '--port', type=int, default=4723, help='port to listen on')
 
     args = parser.parse_args()
+
+    # setup appium
     app.ios_client = Appium(args.app, args.UDID, args.verbose)
+
+    # setup robot (if necessary)
+    app.bot_usb_address = args.bot_usb_address
+    app.uses_robot = app.bot_usb_address is not None
+    if app.uses_robot:
+        if args.UDID is None:
+            raise Exception('Robots cannot be used with the simulator, please supply a UDID')
+
+        # TODO fix package situation so proper imports can be done
+        botpath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'robot', 'bitbeambot-d2'))
+        sys.path.append(botpath)
+        from robot import Bot
+        app.robot = Bot(app.bot_usb_address)
+
     if args.address is None:
         try:
             args.address = socket.gethostbyname(socket.gethostname())
