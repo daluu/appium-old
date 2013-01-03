@@ -24,5 +24,6 @@
 @interface RCViewController : UIViewController
 @property (strong, nonatomic) IBOutlet UITapGestureRecognizer *tapRecognizer;
 @property (strong, nonatomic) IBOutlet UILabel *coordinateLabel;
+@property (strong, nonatomic) IBOutlet UISwipeGestureRecognizer *swipeRecognizer;
 
 @end

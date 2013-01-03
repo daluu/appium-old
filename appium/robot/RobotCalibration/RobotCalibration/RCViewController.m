@@ -31,6 +31,8 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+	[self becomeFirstResponder];
+	
 }
 
 - (void)didReceiveMemoryWarning
@@ -39,20 +41,77 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)handleTap:(UIGestureRecognizer *)gestureRecognizer {
-	CGPoint locationInView = [gestureRecognizer locationInView:self.view];
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskLandscapeLeft | UIInterfaceOrientationLandscapeRight;
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orientation
+{
+	if ((orientation == UIInterfaceOrientationPortrait) ||
+		(orientation == UIInterfaceOrientationLandscapeLeft) ||
+		(orientation == UIInterfaceOrientationLandscapeRight))
+		return YES;
 	
+	return NO;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
+	[self.view setNeedsLayout];
+	[self.view setNeedsDisplay];
+}
+
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	//UITouch *touch = [touches anyObject];
+	for (UIView *view in self.view.subviews) {
+		[view removeFromSuperview];
+	}
+	for (UITouch *touch in [[event allTouches] allObjects]) {
+		[self displayCoordinatesForTouch:touch];
+	}
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+	//UITouch *touch = [touches anyObject];
+	for (UIView *view in self.view.subviews) {
+		[view removeFromSuperview];
+	}
+	for (UITouch *touch in [[event allTouches] allObjects]) {
+		[self displayCoordinatesForTouch:touch];
+	}
+
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UIView *view in self.view.subviews) {
+		[view removeFromSuperview];
+	}
+}
+
+- (void)displayCoordinatesForTouch:(UITouch *)touch {
+	CGPoint locationInView = [touch locationInView:self.view];
+	int viewWidth = self.view.frame.size.width;
+	int viewHeight = self.view.frame.size.height;
+	
+	if (([[UIApplication sharedApplication] statusBarOrientation] == UIInterfaceOrientationLandscapeLeft) ||
+		([[UIApplication sharedApplication] statusBarOrientation] == UIInterfaceOrientationLandscapeRight)) {
+		viewWidth = self.view.frame.size.height;
+		viewHeight = self.view.frame.size.width;
+	}
 	// Calculate the Coordinate Label Frame
 	CGRect coordinateLabelFrame = CGRectMake(0, 0, 0, 0);
 	coordinateLabelFrame.size.height = 20;
 	coordinateLabelFrame.size.width = 100;
 	// We want the label to stay 40pts from the edges
-	coordinateLabelFrame.origin.x = MIN(MAX(locationInView.x - 40, 40), self.view.frame.size.width - coordinateLabelFrame.size.width - 40);
-	coordinateLabelFrame.origin.y = MIN(MAX(locationInView.y - 30, 40), self.view.frame.size.height - coordinateLabelFrame.size.height - 40);
+	coordinateLabelFrame.origin.x = MIN(MAX(locationInView.x - 40, 40), viewWidth - coordinateLabelFrame.size.width - 40);
+	coordinateLabelFrame.origin.y = MIN(MAX(locationInView.y - 30, 40), viewHeight - coordinateLabelFrame.size.height - 40);
 	
 	// Set the frame and test of the label
-	self.coordinateLabel.frame = coordinateLabelFrame;
-	self.coordinateLabel.text = [NSString stringWithFormat:@"(%d, %d)", (int)locationInView.x, (int)locationInView.y];
-	self.coordinateLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:18.0f];
+	UILabel *coordinateLabel = [[UILabel alloc] initWithFrame:coordinateLabelFrame];
+	coordinateLabel.text = [NSString stringWithFormat:@"(%d, %d)", (int)locationInView.x, (int)locationInView.y];
+	coordinateLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:18.0f];
+	[self.view addSubview:coordinateLabel];
 }
+
 @end

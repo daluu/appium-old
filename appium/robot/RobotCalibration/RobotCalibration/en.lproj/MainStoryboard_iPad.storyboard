@@ -20,24 +20,14 @@
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
-                        <connections>
-                            <outletCollection property="gestureRecognizers" destination="aSC-Ur-Dfg" appends="YES" id="zo9-c4-ipg"/>
-                        </connections>
                     </view>
                     <connections>
                         <outlet property="coordinateLabel" destination="PFY-o0-hrc" id="J2u-px-5J6"/>
-                        <outlet property="tapRecognizer" destination="aSC-Ur-Dfg" id="6kH-Ba-PLx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer id="aSC-Ur-Dfg">
-                    <connections>
-                        <action selector="handleTap:" destination="2" id="wsB-Kp-alq"/>
-                        <outlet property="delegate" destination="2" id="yQE-d2-5Qe"/>
-                    </connections>
-                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="-256" y="-344"/>
         </scene>
@@ -46,8 +36,8 @@
         <class className="RCViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/RCViewController.h"/>
             <relationships>
-                <relationship kind="action" name="handleTap:" candidateClass="UIGestureRecognizer"/>
                 <relationship kind="outlet" name="coordinateLabel" candidateClass="UILabel"/>
+                <relationship kind="outlet" name="swipeRecognizer" candidateClass="UISwipeGestureRecognizer"/>
                 <relationship kind="outlet" name="tapRecognizer" candidateClass="UITapGestureRecognizer"/>
             </relationships>
         </class>

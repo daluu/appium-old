@@ -22,35 +22,15 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
-                        <connections>
-                            <outletCollection property="gestureRecognizers" destination="C6I-0R-N2U" appends="YES" id="V0I-Ng-g01"/>
-                        </connections>
                     </view>
                     <connections>
                         <outlet property="coordinateLabel" destination="eYY-KF-KdJ" id="OFb-pv-CiL"/>
-                        <outlet property="tapRecognizer" destination="C6I-0R-N2U" id="McF-gM-DJv"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer id="C6I-0R-N2U">
-                    <connections>
-                        <action selector="handleTap:" destination="2" id="nit-Qm-1TA"/>
-                        <outlet property="delegate" destination="2" id="Vlb-vE-HcL"/>
-                    </connections>
-                </tapGestureRecognizer>
             </objects>
         </scene>
     </scenes>
-    <classes>
-        <class className="RCViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/RCViewController.h"/>
-            <relationships>
-                <relationship kind="action" name="handleTap:" candidateClass="UIGestureRecognizer"/>
-                <relationship kind="outlet" name="coordinateLabel" candidateClass="UILabel"/>
-                <relationship kind="outlet" name="tapRecognizer" candidateClass="UITapGestureRecognizer"/>
-            </relationships>
-        </class>
-    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
