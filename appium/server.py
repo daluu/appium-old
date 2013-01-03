@@ -458,6 +458,11 @@ def get_local_storage_size(session_id=''):
         local_storage[session_id] = {}
     return {'sessionId': session_id, 'status': 0, 'value': len(local_storage[session_id].keys())}
 
+@app.error(404)
+def unsupported_command(error):
+    response.content_type = 'text/plain'
+    return 'Unrecognized command: %s %s' % (request.method, request.path)
+
 if __name__ == '__main__':
     import argparse
 
