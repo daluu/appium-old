@@ -44,7 +44,7 @@ Use that path to run the sample test `python js-test.py "/path/to/sample.app"`
 
 An example of the webdriver approach lives in `sample-code/webdriver-test.py`
 Compile and find the app as you did in the previous example and then launch the webdriver server. `python server.py "/path/to/sample.app"`
-Now you can run a test against that server. `python webdriver-test.py "/path/to/sample.app"`
+Now you can run a test against that server. `python webdriver-test.py`
 
 Contributing
 ------------
