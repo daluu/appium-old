@@ -19,6 +19,7 @@
 
 import serial
 from time import sleep
+import kinematics
 
 class Bot():
 
@@ -61,13 +62,37 @@ class Bot():
     def position(self):
         return (self.a.angle, self.b.angle, self.c.angle)
 
+    def set_position(self, position):
+        offset = len(position) - 3
+        t1 = int(round(position[offset]))
+        t2 = int(round(position[offset+1]))
+        t3 = int(round(position[offset+2]))
+        self.move(t1,t2,t3,0)
+
     def send_command(self, command, position='0'):
         self.serial.write(command)
         self.serial.write(chr(position))
 
-    def move(self, a_angle, b_angle, c_angle, delay=0.01):
-        while self.a.angle is not a_angle and self.b.angle is not b_angle and self.c.angle is not c_angle:
-            self.a.move(a_angle,0,1)
-            self.b.move(b_angle,0,1)
-            self.c.move(c_angle,0,1)
-            sleep(delay)
+    def move(self, a_angle, b_angle, c_angle, delay=0):
+        if delay <= 0:
+            self.a.set_angle(a_angle)
+            self.b.set_angle(b_angle)
+            self.c.set_angle(c_angle)
+            print str(self.position())
+        else:
+            while self.a.angle is not a_angle and self.b.angle is not b_angle and self.c.angle is not c_angle:
+                self.a.move(a_angle,0,1)
+                self.b.move(b_angle,0,1)
+                self.c.move(c_angle,0,1)
+                print str(self.position())
+                sleep(delay)
+
+    # Forward kinematics: (theta1, theta2, theta3) -> (x0, y0, z0)
+    # Returned {error code, x0,y0,z0}
+    def forward_k(self, theta1, theta2, theta3):
+        return kinematics.forward(theta1, theta2, theta3)
+
+    # Forward kinematics: (x, y, z) -> (theta1, theta2, theta3)
+    # Returned {error code, theta1, theta2, theta3}
+    def inverse_k(self, x, y, z):
+        return kinematics.inverse(x,y,z)
