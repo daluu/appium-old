@@ -164,30 +164,21 @@ bot.move(starting_position,starting_position,starting_position)
 # quit appium
 driver.stop()
 
-# calculate translation vectors (virtual space / software space)
-left_vector_mapping = mappings[0]
-for mapping in mappings:
-    if mapping[0][0] - screen_center[0] < left_vector_mapping[0][0] - screen_center[0]:
-        left_vector_mapping = mapping
-left_vector = get_normalized_vector(left_vector_mapping[0], left_vector_mapping[1], screen_center)
-
+# Normalize the robot vectors (close enough)
 right_vector_mapping = mappings[0]
 for mapping in mappings:
     if mapping[0][0] - screen_center[0] > right_vector_mapping[0][0] - screen_center[0]:
         right_vector_mapping = mapping
-right_vector = get_normalized_vector(right_vector_mapping[0], right_vector_mapping[1], screen_center)
+x_scale = 50.0
+ipad_x_normal = (float(right_vector_mapping[0][0] - screen_center[0]) / x_scale, float(right_vector_mapping[0][1] -screen_center[1]) / x_scale)
+
 
 up_vector_mapping = mappings[0]
 for mapping in mappings:
     if mapping[0][1] - screen_center[1] > up_vector_mapping[0][1] - screen_center[1]:
         up_vector_mapping = mapping
-up_vector = get_normalized_vector(up_vector_mapping[0], up_vector_mapping[1], screen_center)
-
-down_vector_mapping = mappings[0]
-for mapping in mappings:
-    if mapping[0][1] - screen_center[1] < down_vector_mapping[0][1] - screen_center[1]:
-        down_vector_mapping = mapping
-down_vector = get_normalized_vector(down_vector_mapping[0], down_vector_mapping[1], screen_center)
+y_scale = 50.0
+ipad_y_normal = (float(up_vector_mapping[0][0] - screen_center[0]) / y_scale, float(up_vector_mapping[0][1] -screen_center[1]) / y_scale)
 
 # print summary of calibration
 print 'Origin Point : ' + str(origin_point)
@@ -214,10 +205,8 @@ o = {}
 o['origin_point'] = origin_point
 o['contact_point'] = contact_point
 o['screen_center'] = screen_center
-o['up'] = up_vector
-o['down'] = down_vector
-o['left'] = left_vector
-o['right'] = right_vector
+o['matrix'] = [[ipad_x_normal[0], ipad_x_normal[1]],
+               [ipad_y_normal[0], ipad_y_normal[1]]]
 
 # dump the calibration info with pickle
 pickle.dump(o, open('calibration.pickle', 'wb'))

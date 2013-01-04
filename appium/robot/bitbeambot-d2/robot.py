@@ -22,6 +22,8 @@ import os
 import pickle
 from time import sleep
 import kinematics
+from numpy import matrix
+from numpy.linalg import inv
 
 class Bot():
 
@@ -67,6 +69,7 @@ class Bot():
         self.cal = None
         if calibrationFile is not None:
             self.cal = pickle.load(open( calibrationFile, 'rb' ))
+            print str(self.cal['matrix'])
 
         self.serial = serial.Serial(serial_port,9600,timeout=1)
         self.is_calibrated = self.cal is not None
@@ -90,10 +93,10 @@ class Bot():
 
     def move(self, a_angle, b_angle, c_angle, delay=0):
         if delay <= 0:
+            print str(self.position())
             self.a.set_angle(a_angle)
             self.b.set_angle(b_angle)
             self.c.set_angle(c_angle)
-            print str(self.position())
         else:
             while self.a.angle is not a_angle and self.b.angle is not b_angle and self.c.angle is not c_angle:
                 self.a.move(a_angle,0,1)
@@ -104,15 +107,14 @@ class Bot():
 
     def tap(self,x,y):
         # calculate positions
-        intermediate_arm_point = self.map_screen_point(x,y, False)
-        intermediate_arm_position = self.inverse_k(intermediate_arm_point[0], intermediate_arm_point[1], intermediate_arm_point[2])
-        final_arm_point = self.map_screen_point(x,y, True)
-        final_arm_position = self.inverse_k(final_arm_point[0], final_arm_point[1], final_arm_point[2])
+        delta_x = x - self.cal['screen_center'][0]
+        delta_y = y - self.cal['screen_center'][1]
+        robot_deltas = self.ipad_to_robot((delta_x, delta_y))
+        intermediate_arm_position = self.inverse_k(self.cal['origin_point'][0]+robot_deltas[0] , self.cal['origin_point'][1]+robot_deltas[1], self.cal['origin_point'][2])
+        final_arm_position = self.inverse_k(self.cal['contact_point'][0]+robot_deltas[0] , self.cal['contact_point'][1]+robot_deltas[1], self.cal['contact_point'][2])
 
         print 'desired coordinates: (%d,%d)' % (x,y)
         print 'screen center: ' + str(self.cal['screen_center'])
-        print 'intermediate arm point: ' + str(intermediate_arm_point)
-        print 'final arm point: ' + str(final_arm_point)
         print 'intermediate arm position: ' + str(intermediate_arm_position)
         print 'final arm position: ' + str(final_arm_position)
 
@@ -123,15 +125,16 @@ class Bot():
             raise Exception('Final Arm Position Is Invalid: '+  str(final_arm_position))
 
         # perform motion
-        #self.set_position(self.cal['origin_point'])
-        sleep(10)
+        origin_position = self.inverse_k(self.cal['origin_point'][0], self.cal['origin_point'][1], self.cal['origin_point'][2])
+        self.set_position(origin_position)
+        sleep(1.5)
         self.set_position(intermediate_arm_position)
-        sleep(1)
+        sleep(1.5)
         self.set_position(final_arm_position)
-        sleep(1)
+        sleep(1.5)
         self.set_position(intermediate_arm_position)
-        sleep(1)
-        self.set_position(self.cal['origin_point'])
+        sleep(1.5)
+        self.set_position(origin_position)
 
 
     # Forward kinematics: (theta1, theta2, theta3) -> (x0, y0, z0)
@@ -144,31 +147,10 @@ class Bot():
     def inverse_k(self, x, y, z):
         return kinematics.inverse(x,y,z)
 
-    # maps a screen point to a bitbeambot x,y,z
-    def map_screen_point(self,x,y,contact=True):
-        if not self.is_calibrated:
-            raise Exception('cannot map screen points without calibration data')
+    def robot_to_ipad(self, robot_distance):
+        S = matrix(self.cal['matrix'])
+        return (matrix([robot_distance[0], robot_distance[1]]) * S).tolist()[0]
 
-        x_motion = x - self.cal['screen_center'][0]
-        y_motion = y - self.cal['screen_center'][1]
-
-        # setup starting position at robot center
-        point = self.cal['contact_point']
-        if not contact:
-            point = self.cal['origin_point']
-
-        # translate x
-        x_vector = self.cal['right']
-        if x_motion < 0:
-            x_vector = self.cal['left']
-        for i in range(0,abs(x_motion)):
-            point = (point[0] + x_vector[0], point[1] + x_vector[1], point[2])
-
-        # translate y
-        y_vector = self.cal['up']
-        if y_motion < 0:
-            x_vector = self.cal['down']
-        for i in range(0,abs(y_motion)):
-            point = (point[0]+ + y_vector[0], point[1] + y_vector[1], point[2])
-
-        return point
+    def ipad_to_robot(self, ipad_distance):
+        I = inv(matrix(self.cal['matrix']))
+        return (matrix([ipad_distance[0], ipad_distance[1]]) * I).tolist()[0]
