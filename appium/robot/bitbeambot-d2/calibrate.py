@@ -21,8 +21,8 @@ import os
 import sys
 from sys import argv
 from time import sleep
-from math import sqrt, pow
 from robot import Bot
+import pickle
 
 appiumpath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'../../'))
 sys.path.append(appiumpath)
@@ -35,14 +35,18 @@ starting_position = 40
 contact_point = None
 origin_point = None
 screen_center = None
-left_point = None
-right_point = None
-up_point = None
-down_point = None
+up_vector = None
+down_vector = None
+right_vector = None
+left_vector = None
+
 mappings = []
 
-def distance(x1,y1,x2,y2):
-    return sqrt( pow(x2-x1,2) + pow(y2-y1,2) )
+def get_normalized_vector(coords, point, origin_coords):
+    movement = point[0]
+    if abs(point[1]) > abs(point[0]):
+        movement = point[1]
+    return ( movement / abs(abs(coords[0]) - abs(origin_coords[0])), movement / abs(abs(coords[1]) - abs(origin_coords[1])))
 
 def get_coords():
     global driver
@@ -55,26 +59,29 @@ def get_coords():
     return (int(coords.split(',')[0][1:].replace(' ','')), int(coords.split(',')[1][:-1].replace(' ','')) )
 
 def map_screen_point(x,y):
-    global mappings
+    global screen_center, contact_point, origin_point
+    global up_vector, down_vector, left_vector, right_vector
 
-    # find the closest points
-    known_points = mappings[:]
-    closest_distances = []
-    closest_points = []
-    for i in range (0,4):
-        closest_distances.append(1000)
-        closest_points.append(None)
-        for point in known_points:
-            dist =  distance(point[0][0], point[0][1])
-            if dist < closest_distances[i]:
-                closest_distances[i] = dist
-                closest_points[i] = point
-        known_points.remove(closest_points[i])
+    x_motion = x - screen_center[0]
+    y_motion = y - screen_center[1]
+    point = contact_point
 
-    # TODO triangulate the point based on the nearest points
-    triangulated_point = None
+    # translate x
+    x_vector = right_vector
+    if x < 0:
+        x_vector = left_vector
+    for i in range(0,abs(x)):
+        point[0] += x_vector[0]
+        point[1] += x_vector[1]
 
-    return  triangulated_point
+    # translate y
+    y_vector = up_vector
+    if y < 0:
+        x_vector = down_vector
+
+    for i in range(0,abs(y)):
+        point[0] += y_vector[0]
+        point[1] += y_vector[1]
 
 def print_usage():
     print 'python calibrate.py UDID /dev/usb-port'
@@ -182,11 +189,60 @@ bot.move(starting_position,starting_position,starting_position)
 # quit appium
 driver.stop()
 
+# calculate translation vectors (virtual space / software space)
+left_vector_mapping = mappings[0]
+for mapping in mappings:
+    if mapping[0][0] - screen_center[0] < left_vector_mapping[0][0] - screen_center[0]:
+        left_vector_mapping = mapping
+left_vector = get_normalized_vector(left_vector_mapping[0], left_vector_mapping[1], screen_center)
+
+right_vector_mapping = mappings[0]
+for mapping in mappings:
+    if mapping[0][0] - screen_center[0] > right_vector_mapping[0][0] - screen_center[0]:
+        right_vector_mapping = mapping
+right_vector = get_normalized_vector(right_vector_mapping[0], right_vector_mapping[1], screen_center)
+
+up_vector_mapping = mappings[0]
+for mapping in mappings:
+    if mapping[0][1] - screen_center[1] > up_vector_mapping[0][1] - screen_center[1]:
+        up_vector_mapping = mapping
+up_vector = get_normalized_vector(up_vector_mapping[0], up_vector_mapping[1], screen_center)
+
+down_vector_mapping = mappings[0]
+for mapping in mappings:
+    if mapping[0][1] - screen_center[1] < down_vector_mapping[0][1] - screen_center[1]:
+        down_vector_mapping = mapping
+down_vector = get_normalized_vector(down_vector_mapping[0], down_vector_mapping[1], screen_center)
+
 # print summary of calibration
 print 'Origin Point : ' + str(origin_point)
+print ''
 print 'Contact Point : ' + str(contact_point)
 print 'Left Point : ' + str(left_point)
 print 'Right Point : ' + str(right_point)
 print 'Up Point : ' + str(up_point)
 print 'Down Point : ' + str(down_point)
-#print 'Screen Center : (' + str(screen_center[0]) + ', ' + str(screen_center[1]) + ')'
+print''
+print 'Center Coordinates : ' + str(screen_center)
+print 'Left Coordinates : ' + str(left_coords)
+print 'Right Coordinates : ' + str(right_coords)
+print 'Up Coordinates : ' + str(up_coords)
+print 'Down Coordinates : ' + str(down_coords)
+print ''
+print 'Left Vector' + str(left_vector)
+print 'Right Vector' + str(right_vector)
+print 'Up Vector' + str(up_vector)
+print 'Down Vector' + str(down_vector)
+
+# prepare calibration object
+o = {}
+o['origin_point'] = origin_point
+o['contact_point'] = contact_point
+o['screen_center'] = screen_center
+o['up'] = up_vector
+o['down'] = down_vector
+o['left'] = left_vector
+o['right'] = right_vector
+
+# dump the calibration info with pickle
+pickle.dump(o, open('calibration.pickle', 'wb'))

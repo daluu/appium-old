@@ -8,3 +8,5 @@
 *.xcscheme
 
 appium/calibration/RobotCalibration/RobotCalibration.xcodeproj/xcuserdata/*
+
+appium/robot/bitbeambot-d2/calibration.pickle
