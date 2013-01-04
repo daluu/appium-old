@@ -18,6 +18,8 @@
 #    under the License.
 
 import serial
+import os
+import pickle
 from time import sleep
 import kinematics
 
@@ -53,8 +55,21 @@ class Bot():
                 self.set_angle(angle)
                 sleep(delay)
 
-    def __init__(self, serial_port):
+    def __init__(self, serial_port=None, calibrationFile=None):
+
+        # auto-detect serial port
+        if serial_port is None:
+            for device in os.listdir('/dev/'):
+                if 'tty' in device and 'usb' in device:
+                    serial_port = os.path.join('/dev/', device)
+
+        # load calibration data if it's supplied
+        self.cal = None
+        if calibrationFile is not None:
+            self.cal = pickle.load(open( calibrationFile, 'rb' ))
+
         self.serial = serial.Serial(serial_port,9600,timeout=1)
+        self.is_calibrated = self.cal is not None
         self.a = Bot.Arm(self, "1")
         self.b = Bot.Arm(self, "2")
         self.c = Bot.Arm(self, "3")
@@ -87,6 +102,38 @@ class Bot():
                 print str(self.position())
                 sleep(delay)
 
+    def tap(self,x,y):
+        # calculate positions
+        intermediate_arm_point = self.map_screen_point(x,y, False)
+        intermediate_arm_position = self.inverse_k(intermediate_arm_point[0], intermediate_arm_point[1], intermediate_arm_point[2])
+        final_arm_point = self.map_screen_point(x,y, True)
+        final_arm_position = self.inverse_k(final_arm_point[0], final_arm_point[1], final_arm_point[2])
+
+        print 'desired coordinates: (%d,%d)' % (x,y)
+        print 'screen center: ' + str(self.cal['screen_center'])
+        print 'intermediate arm point: ' + str(intermediate_arm_point)
+        print 'final arm point: ' + str(final_arm_point)
+        print 'intermediate arm position: ' + str(intermediate_arm_position)
+        print 'final arm position: ' + str(final_arm_position)
+
+        # check for errors
+        if intermediate_arm_position[0] == 1:
+            raise Exception('Intermediate Arm Position Is Invalid: '+  str(intermediate_arm_position))
+        if final_arm_position[0] == 1:
+            raise Exception('Final Arm Position Is Invalid: '+  str(final_arm_position))
+
+        # perform motion
+        #self.set_position(self.cal['origin_point'])
+        sleep(10)
+        self.set_position(intermediate_arm_position)
+        sleep(1)
+        self.set_position(final_arm_position)
+        sleep(1)
+        self.set_position(intermediate_arm_position)
+        sleep(1)
+        self.set_position(self.cal['origin_point'])
+
+
     # Forward kinematics: (theta1, theta2, theta3) -> (x0, y0, z0)
     # Returned {error code, x0,y0,z0}
     def forward_k(self, theta1, theta2, theta3):
@@ -96,3 +143,32 @@ class Bot():
     # Returned {error code, theta1, theta2, theta3}
     def inverse_k(self, x, y, z):
         return kinematics.inverse(x,y,z)
+
+    # maps a screen point to a bitbeambot x,y,z
+    def map_screen_point(self,x,y,contact=True):
+        if not self.is_calibrated:
+            raise Exception('cannot map screen points without calibration data')
+
+        x_motion = x - self.cal['screen_center'][0]
+        y_motion = y - self.cal['screen_center'][1]
+
+        # setup starting position at robot center
+        point = self.cal['contact_point']
+        if not contact:
+            point = self.cal['origin_point']
+
+        # translate x
+        x_vector = self.cal['right']
+        if x_motion < 0:
+            x_vector = self.cal['left']
+        for i in range(0,abs(x_motion)):
+            point = (point[0] + x_vector[0], point[1] + x_vector[1], point[2])
+
+        # translate y
+        y_vector = self.cal['up']
+        if y_motion < 0:
+            x_vector = self.cal['down']
+        for i in range(0,abs(y_motion)):
+            point = (point[0]+ + y_vector[0], point[1] + y_vector[1], point[2])
+
+        return point

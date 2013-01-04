@@ -146,7 +146,13 @@ def do_click(session_id='', element_id=''):
     ios_response = ''
 
     if app.uses_robot:
-        raise Exception('Robot functionality is not yet implemented for /element/click')
+        script_x = "elements['%s'].hitpoint().x" % element_id
+        script_y = "elements['%s'].hitpoint().y" % element_id
+        x = int(app.ios_client.proxy(script_x)[0][1])
+        y = int(app.ios_client.proxy(script_y)[0][1])
+        ios_response = 'Tapped (%d,%d)' % (x,y)
+        print 'HITPOINT: ' + ios_response
+        app.robot.tap(x,y)
     else:
         try:
             script = "elements['%s'].tap()" % element_id
@@ -476,7 +482,8 @@ if __name__ == '__main__':
     parser.add_argument('-v', dest='verbose', action="store_true", default=False, help='verbose mode')
     parser.add_argument('-U', '--UDID', type=str, help='unique device identifier of the SUT')
     parser.add_argument('-a', '--address', type=str, default=None, help='ip address to listen on')
-    parser.add_argument('-b', '--bot_usb_address', type=str, default=None, help='bot usb address (e.g. /dev/tty.usbmodem0)')
+    parser.add_argument('-b', '--robot_usb_address', type=str, default=None, help='robot usb address (e.g. /dev/tty.usbmodem0)')
+    parser.add_argument('-c', '--robot_calibration_file',  type=str, default=None, help='robot calibration file')
     parser.add_argument('-p', '--port', type=int, default=4723, help='port to listen on')
 
     args = parser.parse_args()
@@ -485,8 +492,9 @@ if __name__ == '__main__':
     app.ios_client = Appium(args.app, args.UDID, args.verbose)
 
     # setup robot (if necessary)
-    app.bot_usb_address = args.bot_usb_address
-    app.uses_robot = app.bot_usb_address is not None
+    app.robot_usb_address = args.robot_usb_address
+    app.robot_calibration_file = args.robot_calibration_file
+    app.uses_robot = app.robot_usb_address is not None
     if app.uses_robot:
         if args.UDID is None:
             raise Exception('Robots cannot be used with the simulator, please supply a UDID')
@@ -495,7 +503,7 @@ if __name__ == '__main__':
         botpath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'robot', 'bitbeambot-d2'))
         sys.path.append(botpath)
         from robot import Bot
-        app.robot = Bot(app.bot_usb_address)
+        app.robot = Bot(app.robot_usb_address, app.robot_calibration_file)
 
     if args.address is None:
         try:

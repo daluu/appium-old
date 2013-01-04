@@ -58,31 +58,6 @@ def get_coords():
         return None
     return (int(coords.split(',')[0][1:].replace(' ','')), int(coords.split(',')[1][:-1].replace(' ','')) )
 
-def map_screen_point(x,y):
-    global screen_center, contact_point, origin_point
-    global up_vector, down_vector, left_vector, right_vector
-
-    x_motion = x - screen_center[0]
-    y_motion = y - screen_center[1]
-    point = contact_point
-
-    # translate x
-    x_vector = right_vector
-    if x < 0:
-        x_vector = left_vector
-    for i in range(0,abs(x)):
-        point[0] += x_vector[0]
-        point[1] += x_vector[1]
-
-    # translate y
-    y_vector = up_vector
-    if y < 0:
-        x_vector = down_vector
-
-    for i in range(0,abs(y)):
-        point[0] += y_vector[0]
-        point[1] += y_vector[1]
-
 def print_usage():
     print 'python calibrate.py UDID /dev/usb-port'
 
