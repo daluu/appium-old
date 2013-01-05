@@ -46,6 +46,14 @@ An example of the webdriver approach lives in `sample-code/webdriver-test.py`
 Compile and find the app as you did in the previous example and then launch the webdriver server. `python server.py "/path/to/sample.app"`
 Now you can run a test against that server. `python webdriver-test.py`
 
+Using with a <a href="http://bitbeam.org">Bitbeambot</a>
+-----------
+
+1. Connect the bitbeambot and place a connected iPad beneath it
+2. Run the calibration script `python appium/robot/bitbeambot-d2/calibrate.py UDID /dev/tty.robot_usb_handle`
+3. Launch a webdriver server with the -b an d-c flags set <br />`python server.py -u UDID -b /dev/tty.robot_usb_handle -c /path/to/appium/robot/bitbeambot-d2/calibration.pickle Your.Bundle.Identifier`
+4. Now Appium will send tap actions to the bitbeambot instead of through UIAutomation
+
 Contributing
 ------------
 
