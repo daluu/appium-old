@@ -42,12 +42,6 @@ left_vector = None
 
 mappings = []
 
-def get_normalized_vector(coords, point, origin_coords):
-    movement = point[0]
-    if abs(point[1]) > abs(point[0]):
-        movement = point[1]
-    return ( movement / abs(abs(coords[0]) - abs(origin_coords[0])), movement / abs(abs(coords[1]) - abs(origin_coords[1])))
-
 def get_coords():
     global driver
     coords = driver.proxy('mainWindow.staticTexts()[0].value()')
@@ -194,11 +188,6 @@ print 'Left Coordinates : ' + str(left_coords)
 print 'Right Coordinates : ' + str(right_coords)
 print 'Up Coordinates : ' + str(up_coords)
 print 'Down Coordinates : ' + str(down_coords)
-print ''
-print 'Left Vector' + str(left_vector)
-print 'Right Vector' + str(right_vector)
-print 'Up Vector' + str(up_vector)
-print 'Down Vector' + str(down_vector)
 
 # prepare calibration object
 o = {}

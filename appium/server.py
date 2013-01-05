@@ -150,8 +150,7 @@ def do_click(session_id='', element_id=''):
         script_y = "elements['%s'].hitpoint().y" % element_id
         x = int(app.ios_client.proxy(script_x)[0][1])
         y = int(app.ios_client.proxy(script_y)[0][1])
-        ios_response = 'Tapped (%d,%d)' % (x,y)
-        print 'HITPOINT: ' + ios_response
+        ios_response = ''
         app.robot.tap(x,y)
     else:
         try:

@@ -113,11 +113,6 @@ class Bot():
         intermediate_arm_position = self.inverse_k(self.cal['origin_point'][0]+robot_deltas[0] , self.cal['origin_point'][1]+robot_deltas[1], self.cal['origin_point'][2])
         final_arm_position = self.inverse_k(self.cal['contact_point'][0]+robot_deltas[0] , self.cal['contact_point'][1]+robot_deltas[1], self.cal['contact_point'][2])
 
-        print 'desired coordinates: (%d,%d)' % (x,y)
-        print 'screen center: ' + str(self.cal['screen_center'])
-        print 'intermediate arm position: ' + str(intermediate_arm_position)
-        print 'final arm position: ' + str(final_arm_position)
-
         # check for errors
         if intermediate_arm_position[0] == 1:
             raise Exception('Intermediate Arm Position Is Invalid: '+  str(intermediate_arm_position))
