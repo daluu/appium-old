@@ -50,6 +50,7 @@ Using with a <a href="http://bitbeam.org">Bitbeambot</a>
 -----------
 
 1. Connect the bitbeambot and place a connected iPad beneath it
+2. Build and install the calibration app in appium/robot/RobotCalibration/RobotCalibration/xcodeproj to the iPad
 2. Run the calibration script `python appium/robot/bitbeambot-d2/calibrate.py UDID /dev/tty.robot_usb_handle`
 3. Launch a webdriver server with the -b an d-c flags set <br />`python server.py -u UDID -b /dev/tty.robot_usb_handle -c /path/to/appium/robot/bitbeambot-d2/calibration.pickle Your.Bundle.Identifier`
 4. Now Appium will send tap actions to the bitbeambot instead of through UIAutomation
