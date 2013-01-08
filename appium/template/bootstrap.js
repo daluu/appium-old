@@ -54,9 +54,10 @@ bufferFlusher = bufferFlusher.join('');
 var runLoop = true;
 var instructionNumber = 0;
 
-// WebDriver's implicit wait is 0ms:
-// http://code.google.com/p/selenium/wiki/JsonWireProtocol#POST_/session/:sessionId/timeouts/implicit_wait
-target.setTimeout(0);
+// Instruments default timeout is 5s, webdriver defaults to 0ms.
+// Instruments needs a non-zero timeout to function properly. 1s seems to work.
+// Tests should override this to a app-specific value that works.
+target.setTimeout(1);
 
 var instruction;
 
