@@ -6,7 +6,8 @@
 .idea
 *.xcuserstate
 *.xcscheme
+*.xcworkspacedata
+xcschememanagement.plist
 
 appium/calibration/RobotCalibration/RobotCalibration.xcodeproj/xcuserdata/*
-
 appium/robot/bitbeambot-d2/calibration.pickle
